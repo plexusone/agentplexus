@@ -13,23 +13,23 @@ import (
 
 // ViewRequest is the API request body for creating/updating views.
 type ViewRequest struct {
-	Name          string                                  `json:"name"`
-	Teams         []string                                `json:"teams"`
-	NodePositions map[string]map[string]schema.Position   `json:"node_positions"`
-	LeftWidth     int                                     `json:"left_width"`
-	RightWidth    int                                     `json:"right_width"`
+	Name          string                                `json:"name"`
+	Teams         []string                              `json:"teams"`
+	NodePositions map[string]map[string]schema.Position `json:"node_positions"`
+	LeftWidth     int                                   `json:"left_width"`
+	RightWidth    int                                   `json:"right_width"`
 }
 
 // ViewResponse is the API response for a view.
 type ViewResponse struct {
-	ID            string                                  `json:"id"`
-	Name          string                                  `json:"name"`
-	Teams         []string                                `json:"teams"`
-	NodePositions map[string]map[string]schema.Position   `json:"node_positions"`
-	LeftWidth     int                                     `json:"left_width"`
-	RightWidth    int                                     `json:"right_width"`
-	CreatedAt     string                                  `json:"created_at"`
-	UpdatedAt     string                                  `json:"updated_at"`
+	ID            string                                `json:"id"`
+	Name          string                                `json:"name"`
+	Teams         []string                              `json:"teams"`
+	NodePositions map[string]map[string]schema.Position `json:"node_positions"`
+	LeftWidth     int                                   `json:"left_width"`
+	RightWidth    int                                   `json:"right_width"`
+	CreatedAt     string                                `json:"created_at"`
+	UpdatedAt     string                                `json:"updated_at"`
 }
 
 func viewToResponse(v *ent.View) ViewResponse {
