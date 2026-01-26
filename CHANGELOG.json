@@ -1,0 +1,42 @@
+{
+  "ir_version": "1.0",
+  "project": "multi-agent-designer",
+  "repository": "https://github.com/agentplexus/agentplexus",
+  "versioning": "semver",
+  "commit_convention": "conventional",
+  "maintainers": ["agentplexus", "johncwang@gmail.com"],
+  "releases": [
+    {
+      "version": "v0.1.0",
+      "date": "2026-01-25",
+      "highlights": [
+        {"description": "Visual multi-agent workflow designer with React Flow canvas for exploring agent team specifications"},
+        {"description": "Gmail-style floating panels for viewing agent details with drag, resize, and minimize"},
+        {"description": "Persistent views to save and restore UI layouts using Ent ORM with SQLite/PostgreSQL"}
+      ],
+      "added": [
+        {"description": "React Flow canvas for visualizing agent workflows with custom nodes and edges", "commit": "2987938"},
+        {"description": "Gmail-style floating panels for agent details with drag, resize, minimize, and close controls", "commit": "2987938"},
+        {"description": "Multiple floating panels support with staggered positioning (like Gmail compose windows)", "commit": "2987938"},
+        {"description": "Panel header colors match agent model type (opus=red, sonnet=blue, haiku=green)", "commit": "2987938"},
+        {"description": "2x2 grid layout for viewing up to 4 agent teams simultaneously", "commit": "2987938"},
+        {"description": "Views dropdown to save, load, update, and delete UI layouts", "commit": "2987938"},
+        {"description": "Markdown rendering with syntax highlighting for agent instructions", "commit": "2987938"},
+        {"description": "Team selector sidebar with checkboxes for multi-team selection", "commit": "2987938"},
+        {"description": "Resizable sidebar with drag handle", "commit": "2987938"},
+        {"description": "Go HTTP server with agent team API endpoints", "commit": "1ae5b0f"},
+        {"description": "File watcher for hot-reloading spec changes without server restart", "commit": "1ae5b0f"},
+        {"description": "Ent ORM schema for Views entity with SQLite and PostgreSQL support", "commit": "1ae5b0f"},
+        {"description": "Views REST API for CRUD operations on saved layouts", "commit": "1ae5b0f"},
+        {"description": "Environment-based database configuration (DB_DRIVER, DB_DSN)", "commit": "1ae5b0f"},
+        {"description": "CLI entry point with workspace and port flags", "commit": "1ae5b0f"},
+        {"description": "Embedded frontend assets in Go binary", "commit": "1ae5b0f"}
+      ],
+      "documentation": [
+        {"description": "Initial README with installation and usage instructions"},
+        {"description": "Release notes for v0.1.0"},
+        {"description": "Structured changelog in JSON format"}
+      ]
+    }
+  ]
+}
