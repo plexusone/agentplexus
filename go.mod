@@ -5,7 +5,7 @@ go 1.24.11
 require (
 	entgo.io/ent v0.14.5
 	github.com/agentplexus/multi-agent-spec/sdk/go v0.4.1-0.20260125103806-9e6fd525c5f3
-	github.com/fsnotify/fsnotify v1.8.0
+	github.com/fsnotify/fsnotify v1.9.0
 	github.com/google/uuid v1.6.0
 	github.com/grokify/brandkit v0.1.1-0.20260125112243-5e6e4e0445f3
 	modernc.org/sqlite v1.44.3
