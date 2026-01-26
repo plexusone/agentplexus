@@ -26,6 +26,15 @@ interface Props {
   onPositionsChange?: (positions: Record<string, Position>) => void
 }
 
+interface APXWarning {
+  code: string
+  message: string
+  team?: string
+  step?: string
+  field?: string
+  file?: string
+}
+
 interface GraphResponse {
   nodes: {
     id: string
@@ -41,6 +50,7 @@ interface GraphResponse {
     source: string
     target: string
   }[]
+  warnings?: APXWarning[]
 }
 
 const nodeTypes = { agent: AgentNode }
@@ -60,7 +70,24 @@ function Canvas({ teamName, onNodeClick, savedPositions, onPositionsChange }: Pr
     fetch(`/api/teams/${teamName}/graph`)
       .then(res => res.json())
       .then((data: GraphResponse) => {
-        const flowNodes: Node[] = data.nodes.map(n => {
+        // Log any content warnings from the backend
+        if (data.warnings && data.warnings.length > 0) {
+          data.warnings.forEach(w => {
+            const details = [
+              w.team && `Team: ${w.team}`,
+              w.step && `Step: ${w.step}`,
+              w.field && `Field: ${w.field}`,
+              w.file && `File: ${w.file}`,
+            ].filter(Boolean).join(', ')
+            console.warn(`[${w.code}] ${w.message}${details ? `\n  ${details}` : ''}`)
+          })
+        }
+
+        // Defensive: ensure nodes and edges are arrays
+        const nodes = data.nodes ?? []
+        const edges = data.edges ?? []
+
+        const flowNodes: Node[] = nodes.map(n => {
           // Use saved position if available
           const pos = savedPositions?.[n.id] || n.position
           positionsRef.current[n.id] = pos
@@ -78,7 +105,7 @@ function Canvas({ teamName, onNodeClick, savedPositions, onPositionsChange }: Pr
           }
         })
 
-        const flowEdges: Edge[] = data.edges.map(e => ({
+        const flowEdges: Edge[] = edges.map(e => ({
           id: e.id,
           source: e.source,
           target: e.target,

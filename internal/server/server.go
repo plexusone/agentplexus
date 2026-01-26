@@ -4,7 +4,9 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/agentplexus/multi-agent-designer/internal/ent"
@@ -21,6 +23,7 @@ type Server struct {
 	mux      *http.ServeMux
 	watcher  *watcher.Watcher
 	db       *ent.Client
+	logger   *slog.Logger
 }
 
 // New creates a new Server for the given spec directories.
@@ -30,6 +33,7 @@ func New(specDirs []string, port int, db *ent.Client) *Server {
 		port:     port,
 		mux:      http.NewServeMux(),
 		db:       db,
+		logger:   slog.New(slog.NewTextHandler(os.Stderr, nil)),
 	}
 	s.routes()
 	return s

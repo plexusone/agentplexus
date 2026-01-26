@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/agentplexus/multi-agent-designer/internal/apxerr"
 	multiagent "github.com/agentplexus/multi-agent-spec/sdk/go"
 	"github.com/grokify/brandkit"
 )
@@ -47,8 +48,9 @@ type GraphEdge struct {
 
 // GraphResponse is the API response for a team's DAG.
 type GraphResponse struct {
-	Nodes []GraphNode `json:"nodes"`
-	Edges []GraphEdge `json:"edges"`
+	Nodes    []GraphNode         `json:"nodes"`
+	Edges    []GraphEdge         `json:"edges"`
+	Warnings []map[string]string `json:"warnings,omitempty"`
 }
 
 // AgentDetail is the full agent response including instructions.
@@ -102,7 +104,7 @@ func (s *Server) handleListTeams(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleGetTeam(w http.ResponseWriter, r *http.Request) {
 	teamName := r.PathValue("team")
 
-	team, _, err := s.findTeam(teamName)
+	team, _, _, err := s.findTeam(teamName)
 	if err != nil {
 		http.Error(w, "team not found", http.StatusNotFound)
 		return
@@ -114,13 +116,19 @@ func (s *Server) handleGetTeam(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleGetTeamGraph(w http.ResponseWriter, r *http.Request) {
 	teamName := r.PathValue("team")
 
-	team, specDir, err := s.findTeam(teamName)
+	team, specDir, teamFile, err := s.findTeam(teamName)
 	if err != nil {
 		http.Error(w, "team not found", http.StatusNotFound)
 		return
 	}
 
-	graph := buildGraph(team, specDir)
+	// Validate and normalize team spec
+	warnings := apxerr.ValidateTeam(team, teamFile)
+	for _, warn := range warnings {
+		warn.LogWarn(s.logger)
+	}
+
+	graph := buildGraph(team, specDir, warnings)
 	writeJSON(w, http.StatusOK, graph)
 }
 
@@ -128,7 +136,7 @@ func (s *Server) handleGetAgent(w http.ResponseWriter, r *http.Request) {
 	teamID := r.PathValue("team")
 	agentName := r.PathValue("agent")
 
-	_, specDir, err := s.findTeam(teamID)
+	_, specDir, _, err := s.findTeam(teamID)
 	if err != nil {
 		http.Error(w, "team not found", http.StatusNotFound)
 		return
@@ -164,7 +172,7 @@ func (s *Server) handleGetAgent(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, detail)
 }
 
-func (s *Server) findTeam(name string) (*multiagent.Team, string, error) {
+func (s *Server) findTeam(name string) (*multiagent.Team, string, string, error) {
 	for _, dir := range s.specDirs {
 		teamsDir := filepath.Join(dir, "teams")
 		entries, err := os.ReadDir(teamsDir)
@@ -181,16 +189,22 @@ func (s *Server) findTeam(name string) (*multiagent.Team, string, error) {
 				continue
 			}
 			if team.Name == name {
-				return team, dir, nil
+				return team, dir, teamFile, nil
 			}
 		}
 	}
-	return nil, "", os.ErrNotExist
+	return nil, "", "", os.ErrNotExist
 }
 
-func buildGraph(team *multiagent.Team, specDir string) GraphResponse {
+func buildGraph(team *multiagent.Team, specDir string, warnings []apxerr.Warning) GraphResponse {
 	var nodes []GraphNode
 	var edges []GraphEdge
+
+	// Convert warnings to JSON format
+	var jsonWarnings []map[string]string
+	for _, w := range warnings {
+		jsonWarnings = append(jsonWarnings, w.ToJSON())
+	}
 
 	if team.Workflow == nil {
 		// No workflow defined, show agents as standalone nodes horizontally
@@ -206,7 +220,7 @@ func buildGraph(team *multiagent.Team, specDir string) GraphResponse {
 				Position:    Position{X: float64(i*140) + 50, Y: 100},
 			})
 		}
-		return GraphResponse{Nodes: nodes, Edges: edges}
+		return GraphResponse{Nodes: nodes, Edges: edges, Warnings: jsonWarnings}
 	}
 
 	// Build from workflow steps
@@ -235,7 +249,7 @@ func buildGraph(team *multiagent.Team, specDir string) GraphResponse {
 		}
 	}
 
-	return GraphResponse{Nodes: nodes, Edges: edges}
+	return GraphResponse{Nodes: nodes, Edges: edges, Warnings: jsonWarnings}
 }
 
 func loadAgentSummary(specDir, name string) *multiagent.Agent {
