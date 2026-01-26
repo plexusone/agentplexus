@@ -1,6 +1,8 @@
-# Multi-Agent Designer
+# AgentPlexus
 
 A visual workflow designer for exploring and managing multi-agent team specifications. View agent relationships, inspect configurations, and save custom UI layouts.
+
+![AgentPlexus web console](docs/agentplexus.png)
 
 ## Features
 
