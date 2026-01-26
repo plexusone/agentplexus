@@ -31,8 +31,6 @@ jobs:
           cd frontend
           npm ci
           npm run build
-          mkdir -p ../internal/server/frontend
-          cp -r dist/* ../internal/server/frontend/
 
       - name: Install Go
         uses: actions/setup-go@v6
