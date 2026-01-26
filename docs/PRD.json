@@ -1,0 +1,476 @@
+{
+  "metadata": {
+    "id": "prd-mad-001",
+    "title": "Multi-Agent Designer",
+    "version": "0.1.0",
+    "status": "draft",
+    "created_at": "2026-01-26T00:00:00Z",
+    "updated_at": "2026-01-26T00:00:00Z",
+    "authors": [
+      {
+        "name": "John Wang",
+        "email": "johncwang@gmail.com",
+        "role": "Product Owner"
+      }
+    ],
+    "tags": ["multi-agent", "visualization", "workflow", "ai-agents", "developer-tools"]
+  },
+  "executive_summary": {
+    "problem_statement": "As AI agent systems grow in complexity with multiple specialized agents working together, developers lack visual tools to understand agent team structures, dependencies, and configurations. Navigating YAML specifications manually is error-prone and makes it difficult to comprehend the overall system architecture.",
+    "proposed_solution": "A visual workflow designer that renders multi-agent team specifications as interactive graph visualizations, allowing developers to explore agent relationships, inspect configurations, and manage custom views of their agent architectures.",
+    "expected_outcomes": [
+      "Reduce time to understand agent team structures by 80%",
+      "Enable visual debugging of agent dependencies and configurations",
+      "Provide persistent views for different analysis perspectives",
+      "Support hot-reload for rapid iteration on agent specifications"
+    ],
+    "target_audience": "Developers and architects building multi-agent AI systems who need to visualize, understand, and manage complex agent team specifications",
+    "value_proposition": "Transform complex agent YAML specifications into intuitive visual workflows that accelerate understanding and reduce configuration errors"
+  },
+  "objectives": {
+    "business_objectives": [
+      {
+        "id": "bo-1",
+        "description": "Enable developers to quickly onboard to existing agent team codebases",
+        "rationale": "Visual understanding accelerates developer productivity and reduces ramp-up time"
+      },
+      {
+        "id": "bo-2",
+        "description": "Reduce agent configuration errors through visual validation",
+        "rationale": "Seeing dependencies and relationships helps catch misconfigurations early"
+      }
+    ],
+    "product_goals": [
+      {
+        "id": "pg-1",
+        "description": "Render agent teams as interactive node-based graphs",
+        "rationale": "Graph visualization is the natural representation for agent dependencies"
+      },
+      {
+        "id": "pg-2",
+        "description": "Provide detailed agent inspection via floating panels",
+        "rationale": "Developers need to see full agent configurations without losing graph context"
+      },
+      {
+        "id": "pg-3",
+        "description": "Support multiple simultaneous team views",
+        "rationale": "Comparing teams side-by-side aids architecture decisions"
+      },
+      {
+        "id": "pg-4",
+        "description": "Persist UI layouts as named views",
+        "rationale": "Different tasks require different perspectives; views enable quick switching"
+      }
+    ],
+    "success_metrics": [
+      {
+        "id": "sm-1",
+        "name": "Time to Understanding",
+        "description": "Time for a new developer to understand an agent team structure",
+        "metric": "minutes_to_comprehension",
+        "target": "<5 minutes",
+        "measurement_method": "User testing"
+      },
+      {
+        "id": "sm-2",
+        "name": "Spec Reload Latency",
+        "description": "Time from file save to UI update",
+        "metric": "hot_reload_latency",
+        "target": "<500ms",
+        "measurement_method": "Performance monitoring"
+      }
+    ]
+  },
+  "personas": [
+    {
+      "id": "persona-developer",
+      "name": "Agent Developer",
+      "role": "Software Engineer",
+      "description": "Builds and maintains multi-agent AI systems, writes agent specifications, and debugs agent interactions",
+      "goals": [
+        "Quickly understand existing agent team architectures",
+        "Identify agent dependencies and potential bottlenecks",
+        "Iterate rapidly on agent configurations"
+      ],
+      "pain_points": [
+        "Reading YAML files doesn't convey the big picture",
+        "Hard to trace dependencies across multiple files",
+        "No visual feedback when modifying specifications"
+      ]
+    },
+    {
+      "id": "persona-architect",
+      "name": "System Architect",
+      "role": "Technical Lead",
+      "description": "Designs multi-agent system architectures, reviews team structures, and ensures best practices",
+      "goals": [
+        "Review agent team designs for architectural soundness",
+        "Compare different team configurations",
+        "Document and share system views with stakeholders"
+      ],
+      "pain_points": [
+        "Difficult to get a holistic view of complex agent systems",
+        "No standard way to visualize agent architectures for review",
+        "Manual diagramming is time-consuming and gets out of sync"
+      ]
+    }
+  ],
+  "user_stories": [
+    {
+      "id": "us-1",
+      "persona_id": "persona-developer",
+      "title": "View Agent Team Graph",
+      "as_a": "developer",
+      "i_want": "to see my agent team rendered as an interactive graph",
+      "so_that": "I can understand the team structure at a glance",
+      "acceptance_criteria": [
+        {
+          "id": "ac-1-1",
+          "description": "Agents displayed as nodes with name and model type",
+          "given": "A valid agent team specification",
+          "when": "The team is loaded in the UI",
+          "then": "Each agent appears as a node with its name and model indicator"
+        },
+        {
+          "id": "ac-1-2",
+          "description": "Dependencies shown as directed edges",
+          "given": "Agents with dependencies defined",
+          "when": "The graph is rendered",
+          "then": "Edges connect dependent agents to their dependencies"
+        }
+      ],
+      "priority": "critical",
+      "phase_id": "phase-1",
+      "epic": "Canvas Visualization"
+    },
+    {
+      "id": "us-2",
+      "persona_id": "persona-developer",
+      "title": "Inspect Agent Details",
+      "as_a": "developer",
+      "i_want": "to click on an agent node and see its full configuration",
+      "so_that": "I can review tools, instructions, and settings without leaving the graph view",
+      "acceptance_criteria": [
+        {
+          "id": "ac-2-1",
+          "description": "Floating panel opens on node click",
+          "given": "An agent node in the graph",
+          "when": "User clicks on the node",
+          "then": "A floating panel opens showing agent details"
+        },
+        {
+          "id": "ac-2-2",
+          "description": "Panel shows full agent configuration",
+          "given": "An open agent panel",
+          "when": "User views the panel",
+          "then": "Panel displays name, model, tools, dependencies, and instructions"
+        }
+      ],
+      "priority": "critical",
+      "phase_id": "phase-1",
+      "epic": "Agent Inspection"
+    },
+    {
+      "id": "us-3",
+      "persona_id": "persona-developer",
+      "title": "Multiple Floating Panels",
+      "as_a": "developer",
+      "i_want": "to open multiple agent panels simultaneously",
+      "so_that": "I can compare configurations between agents",
+      "acceptance_criteria": [
+        {
+          "id": "ac-3-1",
+          "description": "Multiple panels can be open at once",
+          "given": "One panel is already open",
+          "when": "User clicks another agent node",
+          "then": "A second panel opens without closing the first"
+        },
+        {
+          "id": "ac-3-2",
+          "description": "Panels are staggered for visibility",
+          "given": "Multiple panels are opened",
+          "when": "Panels are displayed",
+          "then": "Each new panel is offset from previous panels"
+        }
+      ],
+      "priority": "high",
+      "phase_id": "phase-1",
+      "epic": "Agent Inspection"
+    },
+    {
+      "id": "us-4",
+      "persona_id": "persona-architect",
+      "title": "Multi-Team View",
+      "as_a": "architect",
+      "i_want": "to view multiple agent teams side by side",
+      "so_that": "I can compare team structures and identify patterns",
+      "acceptance_criteria": [
+        {
+          "id": "ac-4-1",
+          "description": "Grid layout for multiple teams",
+          "given": "Multiple teams are selected",
+          "when": "Teams are displayed",
+          "then": "Teams appear in a 2x2 grid layout"
+        }
+      ],
+      "priority": "high",
+      "phase_id": "phase-1",
+      "epic": "Canvas Visualization"
+    },
+    {
+      "id": "us-5",
+      "persona_id": "persona-developer",
+      "title": "Save UI Layout",
+      "as_a": "developer",
+      "i_want": "to save my current UI layout as a named view",
+      "so_that": "I can quickly restore it later for specific tasks",
+      "acceptance_criteria": [
+        {
+          "id": "ac-5-1",
+          "description": "Save view with name",
+          "given": "A configured UI layout",
+          "when": "User saves the view with a name",
+          "then": "The view is persisted to the database"
+        },
+        {
+          "id": "ac-5-2",
+          "description": "View includes all UI state",
+          "given": "A saved view",
+          "when": "View is loaded",
+          "then": "Selected teams, node positions, and sidebar width are restored"
+        }
+      ],
+      "priority": "high",
+      "phase_id": "phase-1",
+      "epic": "View Management"
+    },
+    {
+      "id": "us-6",
+      "persona_id": "persona-developer",
+      "title": "Hot Reload Specifications",
+      "as_a": "developer",
+      "i_want": "the UI to update automatically when I edit spec files",
+      "so_that": "I can iterate on agent configurations rapidly",
+      "acceptance_criteria": [
+        {
+          "id": "ac-6-1",
+          "description": "File changes trigger UI refresh",
+          "given": "The app is running and displaying a team",
+          "when": "User edits and saves a spec file",
+          "then": "The UI updates within 500ms without manual refresh"
+        }
+      ],
+      "priority": "high",
+      "phase_id": "phase-1",
+      "epic": "Developer Experience"
+    },
+    {
+      "id": "us-7",
+      "persona_id": "persona-developer",
+      "title": "Model Type Indicators",
+      "as_a": "developer",
+      "i_want": "to see visual indicators of which model each agent uses",
+      "so_that": "I can quickly identify agent capabilities and costs",
+      "acceptance_criteria": [
+        {
+          "id": "ac-7-1",
+          "description": "Color coding by model",
+          "given": "Agents with different models",
+          "when": "Panels are displayed",
+          "then": "Headers are colored: opus=red, sonnet=blue, haiku=green"
+        }
+      ],
+      "priority": "medium",
+      "phase_id": "phase-1",
+      "epic": "Agent Inspection"
+    },
+    {
+      "id": "us-8",
+      "persona_id": "persona-developer",
+      "title": "Markdown Instructions Rendering",
+      "as_a": "developer",
+      "i_want": "agent instructions rendered as formatted markdown",
+      "so_that": "I can read complex instructions with proper formatting and syntax highlighting",
+      "acceptance_criteria": [
+        {
+          "id": "ac-8-1",
+          "description": "Markdown rendered with syntax highlighting",
+          "given": "An agent with markdown instructions",
+          "when": "Instructions are displayed in a panel",
+          "then": "Markdown is rendered with headers, lists, and code blocks highlighted"
+        }
+      ],
+      "priority": "medium",
+      "phase_id": "phase-1",
+      "epic": "Agent Inspection"
+    }
+  ],
+  "requirements": {
+    "functional": [
+      {
+        "id": "fr-1",
+        "title": "Team Discovery",
+        "description": "Automatically discover agent teams from workspace directories containing team.yaml files",
+        "priority": "must",
+        "category": "Core"
+      },
+      {
+        "id": "fr-2",
+        "title": "Graph Rendering",
+        "description": "Render agent teams as interactive node-edge graphs using React Flow",
+        "priority": "must",
+        "category": "Visualization"
+      },
+      {
+        "id": "fr-3",
+        "title": "Floating Panels",
+        "description": "Display agent details in draggable, resizable, minimizable floating panels",
+        "priority": "must",
+        "category": "UI"
+      },
+      {
+        "id": "fr-4",
+        "title": "View Persistence",
+        "description": "Store and retrieve named UI layouts via REST API backed by SQLite or PostgreSQL",
+        "priority": "must",
+        "category": "Data"
+      },
+      {
+        "id": "fr-5",
+        "title": "File Watching",
+        "description": "Monitor spec directories for changes and trigger UI updates",
+        "priority": "should",
+        "category": "Developer Experience"
+      },
+      {
+        "id": "fr-6",
+        "title": "Embedded Frontend",
+        "description": "Embed compiled frontend assets in the Go binary for single-file distribution",
+        "priority": "should",
+        "category": "Deployment"
+      }
+    ],
+    "non_functional": [
+      {
+        "id": "nfr-1",
+        "category": "performance",
+        "title": "Hot Reload Latency",
+        "description": "UI must update within 500ms of file changes",
+        "target": "<500ms"
+      },
+      {
+        "id": "nfr-2",
+        "category": "performance",
+        "title": "Initial Load Time",
+        "description": "Application should be ready to use within 2 seconds of launch",
+        "target": "<2s"
+      },
+      {
+        "id": "nfr-3",
+        "category": "scalability",
+        "title": "Team Size",
+        "description": "Support teams with up to 50 agents without performance degradation",
+        "target": "50 agents per team"
+      },
+      {
+        "id": "nfr-4",
+        "category": "portability",
+        "title": "Cross-Platform",
+        "description": "Run on macOS, Linux, and Windows",
+        "target": "All major desktop OS"
+      }
+    ]
+  },
+  "roadmap": {
+    "phases": [
+      {
+        "id": "phase-1",
+        "name": "MVP",
+        "description": "Core visualization and inspection capabilities",
+        "start_date": "2026-01-20T00:00:00Z",
+        "end_date": "2026-01-31T00:00:00Z",
+        "status": "in_progress",
+        "milestones": [
+          {
+            "id": "ms-1",
+            "name": "v0.1.0 Release",
+            "date": "2026-01-25T00:00:00Z",
+            "deliverables": [
+              "React Flow canvas with agent nodes",
+              "Floating panels for agent details",
+              "Views CRUD API",
+              "Hot reload via file watcher"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "phase-2",
+        "name": "Enhanced Visualization",
+        "description": "Advanced graph features and filtering",
+        "start_date": "2026-02-01T00:00:00Z",
+        "end_date": "2026-02-28T00:00:00Z",
+        "status": "planned",
+        "milestones": [
+          {
+            "id": "ms-2",
+            "name": "v0.2.0 Release",
+            "date": "2026-02-28T00:00:00Z",
+            "deliverables": [
+              "Graph layout algorithms (hierarchical, force-directed)",
+              "Search and filter agents",
+              "Dependency path highlighting",
+              "Export graph as image/SVG"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "phase-3",
+        "name": "Collaboration",
+        "description": "Team sharing and annotation features",
+        "start_date": "2026-03-01T00:00:00Z",
+        "end_date": "2026-03-31T00:00:00Z",
+        "status": "planned",
+        "milestones": [
+          {
+            "id": "ms-3",
+            "name": "v0.3.0 Release",
+            "date": "2026-03-31T00:00:00Z",
+            "deliverables": [
+              "Share views via URL",
+              "Annotations on agents and edges",
+              "Comments and notes"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "assumptions_constraints": {
+    "assumptions": [
+      {
+        "id": "a-1",
+        "description": "Agent specifications follow a consistent YAML format with team.yaml and agents/*.yaml structure",
+        "rationale": "The tool is designed for a specific spec format used in the agentplexus ecosystem"
+      },
+      {
+        "id": "a-2",
+        "description": "Users have Go and Node.js installed for development builds",
+        "rationale": "Standard toolchain for the tech stack"
+      }
+    ],
+    "constraints": [
+      {
+        "id": "c-1",
+        "description": "Must work offline without internet connectivity",
+        "rationale": "Developers may work in air-gapped environments"
+      },
+      {
+        "id": "c-2",
+        "description": "Single binary distribution preferred",
+        "rationale": "Simplifies installation and reduces dependencies"
+      }
+    ]
+  }
+}
