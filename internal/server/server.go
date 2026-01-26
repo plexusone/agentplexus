@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
+	"time"
 
 	"github.com/agentplexus/multi-agent-designer/internal/ent"
 	"github.com/agentplexus/multi-agent-designer/internal/watcher"
@@ -70,8 +71,14 @@ func (s *Server) ListenAndServe() error {
 	s.watcher = w
 	go s.watcher.Run()
 
-	addr := fmt.Sprintf(":%d", s.port)
-	return http.ListenAndServe(addr, s.mux)
+	srv := &http.Server{
+		Addr:         fmt.Sprintf(":%d", s.port),
+		Handler:      s.mux,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+	return srv.ListenAndServe()
 }
 
 // Close cleans up server resources.
