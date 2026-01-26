@@ -1,0 +1,12 @@
+bin/
+/specui
+node_modules/
+frontend/node_modules/
+internal/server/frontend/
+data/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+.DS_Store
