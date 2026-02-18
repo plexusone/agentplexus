@@ -8,7 +8,7 @@ require (
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/google/uuid v1.6.0
 	github.com/grokify/brandkit v0.2.0
-	modernc.org/sqlite v1.44.3
+	modernc.org/sqlite v1.46.0
 )
 
 require (
