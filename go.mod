@@ -4,7 +4,7 @@ go 1.24.11
 
 require (
 	entgo.io/ent v0.14.5
-	github.com/agentplexus/multi-agent-spec/sdk/go v0.5.0
+	github.com/agentplexus/multi-agent-spec/sdk/go v0.7.0
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/google/uuid v1.6.0
 	github.com/grokify/brandkit v0.2.0
@@ -30,6 +30,8 @@ require (
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
+	github.com/valyala/bytebufferpool v1.0.0 // indirect
+	github.com/valyala/quicktemplate v1.8.0 // indirect
 	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 	github.com/zclconf/go-cty v1.17.0 // indirect
 	github.com/zclconf/go-cty-yaml v1.2.0 // indirect
