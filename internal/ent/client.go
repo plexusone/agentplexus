@@ -9,13 +9,13 @@ import (
 	"log"
 	"reflect"
 
-	"github.com/agentplexus/multi-agent-designer/internal/ent/migrate"
+	"github.com/plexusone/agentplexus/internal/ent/migrate"
 	"github.com/google/uuid"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
-	"github.com/agentplexus/multi-agent-designer/internal/ent/view"
+	"github.com/plexusone/agentplexus/internal/ent/view"
 )
 
 // Client is the client that holds all ent builders.

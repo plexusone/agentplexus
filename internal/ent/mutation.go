@@ -11,9 +11,9 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/agentplexus/multi-agent-designer/internal/ent/predicate"
-	"github.com/agentplexus/multi-agent-designer/internal/ent/schema"
-	"github.com/agentplexus/multi-agent-designer/internal/ent/view"
+	"github.com/plexusone/agentplexus/internal/ent/predicate"
+	"github.com/plexusone/agentplexus/internal/ent/schema"
+	"github.com/plexusone/agentplexus/internal/ent/view"
 	"github.com/google/uuid"
 )
 

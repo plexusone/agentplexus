@@ -9,8 +9,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/agentplexus/multi-agent-designer/internal/ent"
-	"github.com/agentplexus/multi-agent-designer/internal/watcher"
+	"github.com/plexusone/agentplexus/internal/ent"
+	"github.com/plexusone/agentplexus/internal/watcher"
 )
 
 //go:embed frontend

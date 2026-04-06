@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/agentplexus/multi-agent-designer/internal/apxerr"
-	multiagent "github.com/agentplexus/multi-agent-spec/sdk/go"
 	"github.com/grokify/brandkit"
+	"github.com/plexusone/agentplexus/internal/apxerr"
+	multiagent "github.com/plexusone/multi-agent-spec/sdk/go"
 )
 
 // TeamSummary is the API response for listing teams.

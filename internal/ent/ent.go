@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/agentplexus/multi-agent-designer/internal/ent/view"
+	"github.com/plexusone/agentplexus/internal/ent/view"
 )
 
 // ent aliases to avoid import conflicts in user's code.

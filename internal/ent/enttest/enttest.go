@@ -5,12 +5,12 @@ package enttest
 import (
 	"context"
 
-	"github.com/agentplexus/multi-agent-designer/internal/ent"
+	"github.com/plexusone/agentplexus/internal/ent"
 	// required by schema hooks.
-	_ "github.com/agentplexus/multi-agent-designer/internal/ent/runtime"
+	_ "github.com/plexusone/agentplexus/internal/ent/runtime"
 
 	"entgo.io/ent/dialect/sql/schema"
-	"github.com/agentplexus/multi-agent-designer/internal/ent/migrate"
+	"github.com/plexusone/agentplexus/internal/ent/migrate"
 )
 
 type (

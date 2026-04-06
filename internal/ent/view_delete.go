@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/agentplexus/multi-agent-designer/internal/ent/predicate"
-	"github.com/agentplexus/multi-agent-designer/internal/ent/view"
+	"github.com/plexusone/agentplexus/internal/ent/predicate"
+	"github.com/plexusone/agentplexus/internal/ent/view"
 )
 
 // ViewDelete is the builder for deleting a View entity.

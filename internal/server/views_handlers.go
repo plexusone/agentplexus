@@ -6,9 +6,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/agentplexus/multi-agent-designer/internal/ent"
-	"github.com/agentplexus/multi-agent-designer/internal/ent/schema"
-	"github.com/agentplexus/multi-agent-designer/internal/ent/view"
+	"github.com/plexusone/agentplexus/internal/ent"
+	"github.com/plexusone/agentplexus/internal/ent/schema"
+	"github.com/plexusone/agentplexus/internal/ent/view"
 )
 
 // ViewRequest is the API request body for creating/updating views.

@@ -3,7 +3,7 @@ package apxerr
 import (
 	"fmt"
 
-	multiagent "github.com/agentplexus/multi-agent-spec/sdk/go"
+	multiagent "github.com/plexusone/multi-agent-spec/sdk/go"
 )
 
 // ValidateTeam validates a team spec and returns any warnings.

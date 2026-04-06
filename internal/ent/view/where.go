@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/agentplexus/multi-agent-designer/internal/ent/predicate"
+	"github.com/plexusone/agentplexus/internal/ent/predicate"
 	"github.com/google/uuid"
 )
 

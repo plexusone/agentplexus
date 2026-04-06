@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/agentplexus/multi-agent-designer/internal/server"
-	"github.com/agentplexus/multi-agent-designer/internal/storage"
+	"github.com/plexusone/agentplexus/internal/server"
+	"github.com/plexusone/agentplexus/internal/storage"
 )
 
 func main() {

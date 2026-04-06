@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/agentplexus/multi-agent-designer/internal/ent"
+	"github.com/plexusone/agentplexus/internal/ent"
 )
 
 // The ViewFunc type is an adapter to allow the use of ordinary

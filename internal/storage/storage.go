@@ -12,7 +12,7 @@ import (
 	entsql "entgo.io/ent/dialect/sql"
 	_ "modernc.org/sqlite"
 
-	"github.com/agentplexus/multi-agent-designer/internal/ent"
+	"github.com/plexusone/agentplexus/internal/ent"
 )
 
 const (
