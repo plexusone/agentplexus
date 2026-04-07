@@ -64,7 +64,7 @@ jobs:
           name: frontend-dist
           path: internal/server/frontend/
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go-version }}
 
