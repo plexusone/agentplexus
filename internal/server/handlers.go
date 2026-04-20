@@ -404,7 +404,7 @@ func (s *Server) handleGetIcon(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "image/svg+xml")
 	w.Header().Set("Cache-Control", "public, max-age=86400") // Cache for 1 day
-	if _, err = w.Write(svg); err != nil {
+	if _, err = w.Write(svg); err != nil {                   //nolint:gosec // G705: SVG from embedded brandkit assets, not user input
 		log.Printf("error writing icon response: %v", err)
 	}
 }
