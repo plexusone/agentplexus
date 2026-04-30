@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	entgo.io/ent v0.14.6
-	github.com/fsnotify/fsnotify v1.9.0
+	github.com/fsnotify/fsnotify v1.10.0
 	github.com/google/uuid v1.6.0
 	github.com/grokify/brandkit v0.4.0
 	github.com/plexusone/multi-agent-spec/sdk/go v0.8.0
