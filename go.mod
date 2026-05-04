@@ -8,7 +8,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/grokify/brandkit v0.4.0
 	github.com/plexusone/multi-agent-spec/sdk/go v0.8.0
-	modernc.org/sqlite v1.49.1
+	modernc.org/sqlite v1.50.0
 )
 
 require (
