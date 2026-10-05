@@ -128,6 +128,9 @@ export DB_DSN="postgres://user:pass@localhost/specui?sslmode=disable"
 | `/api/views/{id}` | GET | Get a specific view |
 | `/api/views/{id}` | PUT | Update a view |
 | `/api/views/{id}` | DELETE | Delete a view |
+| `/api/registry/agents` | GET | List registered agent definitions |
+| `/api/registry/teams` | GET | List registered team definitions with resolved members |
+| `/api/registry/sync` | POST | Re-scan spec directories and upsert the registry |
 
 ## Development
 
