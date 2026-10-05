@@ -1,0 +1,53 @@
+# Release Notes - v0.2.0
+
+**Release Date:** 2026-10-05
+
+## Overview
+
+Adds the Agent/Team Definition Registry: a persistent, queryable inventory of the agents and teams discovered across registered repos, replacing the stateless, read-on-every-request behavior of the visual designer with stable identity and drift detection.
+
+## Highlights
+
+- **Agent/Team Definition Registry** - Agents and teams discovered in `specs/agents/*.md` and `specs/teams/*.json` across registered repos are upserted into persistent `AgentDefinition` and `TeamDefinition` records, keyed by `(repo, namespace, name)` so identity survives file moves
+- **Dangling-reference detection** - Every sync validates a team's roster, orchestrator, and agent-assigned workflow steps against what's actually registered, via `multi-agent-spec`'s `Team.ValidateAgentReferences`
+- **Always current** - Registration runs at startup, re-runs automatically on spec file changes, and can be triggered on demand
+
+## Features
+
+### Registry
+
+- **Stable identity** - Each `AgentDefinition`/`TeamDefinition` carries a `registry_xrn` and a `source_ref` derived from the owning repo's module path, independent of file location
+- **Content-hash drift detection** - Re-syncing unchanged files only refreshes `last_seen_at`; changed files update the record and increment the sync result's counters
+- **Team membership resolution** - Teams resolve their roster to registered agent IDs via an ent M2M edge, refreshed on every sync (not just when the team file changes) so an agent registered after its team references it still gets linked
+- **Resilient sync** - A malformed agent spec file produces a warning rather than aborting registration for the rest of the repo or workspace
+- **Concurrency-safe** - Watcher-triggered and HTTP-triggered syncs are serialized behind a mutex so they can't race on the same unique-index insert
+
+### API
+
+- `GET /api/registry/agents` - List registered agent definitions
+- `GET /api/registry/teams` - List registered team definitions with resolved members
+- `POST /api/registry/sync` - Re-scan all spec directories and upsert the registry on demand
+
+## Getting Started
+
+```bash
+# Build
+make build
+
+# Run with workspace - registration happens automatically at startup
+./specui --workspace ~/path/to/agentplexus
+
+# Query the registry
+curl http://localhost:8090/api/registry/agents
+curl http://localhost:8090/api/registry/teams
+```
+
+## Known Limitations
+
+- Repos without a `multi-agent-spec` `specs/` directory (e.g. hosted, non-interactive agent systems) aren't registered yet
+- No marketplace, evaluation/rubric tracking, or cost/telemetry - this release is the Definition plane only
+
+## Contributors
+
+- John Wang (@johncwang)
+- Claude Sonnet 5 (AI pair programmer)

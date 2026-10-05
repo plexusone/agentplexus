@@ -1,11 +1,40 @@
 {
-  "ir_version": "1.0",
+  "irVersion": "1.0",
   "project": "multi-agent-designer",
-  "repository": "https://github.com/agentplexus/agentplexus",
+  "repository": "https://github.com/plexusone/agentplexus",
   "versioning": "semver",
-  "commit_convention": "conventional",
+  "commitConvention": "conventional",
   "maintainers": ["agentplexus", "johncwang@gmail.com"],
   "releases": [
+    {
+      "version": "v0.2.0",
+      "date": "2026-10-05",
+      "highlights": [
+        {"description": "Agent/team definition registry: a persistent, queryable inventory of agents and teams discovered across registered repos, with stable identity and dangling-reference detection"}
+      ],
+      "added": [
+        {"description": "AgentDefinition and TeamDefinition ent entities, upserted from multi-agent-spec agent/team files, keyed by (repo, namespace, name) with a stable registry_xrn and source_ref", "commit": "6eba8c4"},
+        {"description": "GET /api/registry/agents, GET /api/registry/teams, and POST /api/registry/sync endpoints", "commit": "6eba8c4"},
+        {"description": "Registry sync wired into specui startup and the existing spec file watcher, coalesced through a buffered channel", "commit": "6eba8c4"},
+        {"description": "Team sync delegates dangling-reference detection to multi-agent-spec's Team.ValidateAgentReferences (v0.10.0), covering the roster, orchestrator, and agent-assigned workflow steps", "commit": "6eba8c4"}
+      ],
+      "fixed": [
+        {"description": "AgentDefinition.namespace now defaults to \"\" instead of being nullable, so every create path participates in the (repo_name, namespace, name) unique identity constraint", "commit": "c6ffb46"},
+        {"description": "Concurrent registry syncs (watcher-triggered and HTTP-triggered) no longer race on Create against the unique index; Sync is now serialized behind a mutex", "commit": "c6ffb46"},
+        {"description": "A team's agent membership edges now refresh on every sync instead of only when the team file's content hash changes, fixing agents that register after the team file referencing them", "commit": "c6ffb46"},
+        {"description": "The registry sync HTTP handler no longer echoes internal error details (filesystem paths, DB internals) to the caller", "commit": "c6ffb46"}
+      ],
+      "tests": [
+        {"description": "Sync test suite covering create/idempotency/content-change-detection, dangling-reference warnings, malformed-file resilience, and identity stability across file renames", "commit": "68cd9c8"}
+      ],
+      "documentation": [
+        {"description": "README: document the new registry API endpoints", "commit": "bd2609f"}
+      ],
+      "internal": [
+        {"description": "Bump github.com/plexusone/multi-agent-spec dependency to v0.10.0 and update Go module dependencies", "commit": "eefe971"},
+        {"description": "Ignore local IDEATION_CHAT*.md scratch files", "commit": "91a921a"}
+      ]
+    },
     {
       "version": "v0.1.0",
       "date": "2026-01-25",
