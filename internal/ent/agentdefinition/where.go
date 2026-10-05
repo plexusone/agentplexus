@@ -256,16 +256,6 @@ func NamespaceHasSuffix(v string) predicate.AgentDefinition {
 	return predicate.AgentDefinition(sql.FieldHasSuffix(FieldNamespace, v))
 }
 
-// NamespaceIsNil applies the IsNil predicate on the "namespace" field.
-func NamespaceIsNil() predicate.AgentDefinition {
-	return predicate.AgentDefinition(sql.FieldIsNull(FieldNamespace))
-}
-
-// NamespaceNotNil applies the NotNil predicate on the "namespace" field.
-func NamespaceNotNil() predicate.AgentDefinition {
-	return predicate.AgentDefinition(sql.FieldNotNull(FieldNamespace))
-}
-
 // NamespaceEqualFold applies the EqualFold predicate on the "namespace" field.
 func NamespaceEqualFold(v string) predicate.AgentDefinition {
 	return predicate.AgentDefinition(sql.FieldEqualFold(FieldNamespace, v))

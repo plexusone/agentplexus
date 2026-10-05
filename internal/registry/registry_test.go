@@ -334,3 +334,47 @@ func TestSync_MissingSpecSubdirsAreNotErrors(t *testing.T) {
 		t.Errorf("expected no-op result, got %+v", result)
 	}
 }
+
+func TestSync_RefreshesMembershipEvenWhenTeamFileUnchanged(t *testing.T) {
+	// Regression test: a team can reference an agent that isn't
+	// registered yet (e.g. ghost.md doesn't exist when the team is
+	// first synced). When that agent file later appears, the team's
+	// membership edge must pick it up even though team.json itself
+	// never changed and its content hash is identical across syncs.
+	client := newTestClient(t)
+	ctx := context.Background()
+	specDir := setupSpecDir(t)
+	agentsDir := filepath.Join(specDir, "agents")
+
+	writeAgent(t, agentsDir, "qa", "Quality checks")
+	writeTeam(t, filepath.Join(specDir, "teams"), []string{"qa", "ghost"})
+
+	if _, err := Sync(ctx, client, []string{specDir}); err != nil {
+		t.Fatalf("first Sync: %v", err)
+	}
+
+	team, err := client.TeamDefinition.Query().Where(entteamdef.Name("fixture-team")).WithAgents().Only(ctx)
+	if err != nil {
+		t.Fatalf("query team after first sync: %v", err)
+	}
+	if len(team.Edges.Agents) != 1 {
+		t.Fatalf("after first sync, resolved agent edges = %d, want 1 (ghost isn't registered yet)", len(team.Edges.Agents))
+	}
+
+	// "ghost" now gets a spec file. team.json is untouched, so its
+	// content hash is unchanged — the bug was that membership
+	// resolution was gated on that hash changing.
+	writeAgent(t, agentsDir, "ghost", "Was missing, now exists")
+
+	if _, err := Sync(ctx, client, []string{specDir}); err != nil {
+		t.Fatalf("second Sync: %v", err)
+	}
+
+	team, err = client.TeamDefinition.Query().Where(entteamdef.Name("fixture-team")).WithAgents().Only(ctx)
+	if err != nil {
+		t.Fatalf("query team after second sync: %v", err)
+	}
+	if len(team.Edges.Agents) != 2 {
+		t.Errorf("after ghost is registered, resolved agent edges = %d, want 2", len(team.Edges.Agents))
+	}
+}

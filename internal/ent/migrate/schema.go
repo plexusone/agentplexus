@@ -12,7 +12,7 @@ var (
 	AgentDefinitionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "repo_name", Type: field.TypeString},
-		{Name: "namespace", Type: field.TypeString, Nullable: true},
+		{Name: "namespace", Type: field.TypeString, Default: ""},
 		{Name: "name", Type: field.TypeString},
 		{Name: "qualified_name", Type: field.TypeString},
 		{Name: "source_ref", Type: field.TypeString, Nullable: true},

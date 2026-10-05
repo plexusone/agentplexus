@@ -22,6 +22,10 @@ func init() {
 	agentdefinitionDescRepoName := agentdefinitionFields[1].Descriptor()
 	// agentdefinition.RepoNameValidator is a validator for the "repo_name" field. It is called by the builders before save.
 	agentdefinition.RepoNameValidator = agentdefinitionDescRepoName.Validators[0].(func(string) error)
+	// agentdefinitionDescNamespace is the schema descriptor for namespace field.
+	agentdefinitionDescNamespace := agentdefinitionFields[2].Descriptor()
+	// agentdefinition.DefaultNamespace holds the default value on creation for the namespace field.
+	agentdefinition.DefaultNamespace = agentdefinitionDescNamespace.Default.(string)
 	// agentdefinitionDescName is the schema descriptor for name field.
 	agentdefinitionDescName := agentdefinitionFields[3].Descriptor()
 	// agentdefinition.NameValidator is a validator for the "name" field. It is called by the builders before save.

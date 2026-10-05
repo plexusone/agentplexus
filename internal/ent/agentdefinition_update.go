@@ -59,12 +59,6 @@ func (_u *AgentDefinitionUpdate) SetNillableNamespace(v *string) *AgentDefinitio
 	return _u
 }
 
-// ClearNamespace clears the value of the "namespace" field.
-func (_u *AgentDefinitionUpdate) ClearNamespace() *AgentDefinitionUpdate {
-	_u.mutation.ClearNamespace()
-	return _u
-}
-
 // SetName sets the "name" field.
 func (_u *AgentDefinitionUpdate) SetName(v string) *AgentDefinitionUpdate {
 	_u.mutation.SetName(v)
@@ -456,9 +450,6 @@ func (_u *AgentDefinitionUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if value, ok := _u.mutation.Namespace(); ok {
 		_spec.SetField(agentdefinition.FieldNamespace, field.TypeString, value)
 	}
-	if _u.mutation.NamespaceCleared() {
-		_spec.ClearField(agentdefinition.FieldNamespace, field.TypeString)
-	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(agentdefinition.FieldName, field.TypeString, value)
 	}
@@ -655,12 +646,6 @@ func (_u *AgentDefinitionUpdateOne) SetNillableNamespace(v *string) *AgentDefini
 	if v != nil {
 		_u.SetNamespace(*v)
 	}
-	return _u
-}
-
-// ClearNamespace clears the value of the "namespace" field.
-func (_u *AgentDefinitionUpdateOne) ClearNamespace() *AgentDefinitionUpdateOne {
-	_u.mutation.ClearNamespace()
 	return _u
 }
 
@@ -1084,9 +1069,6 @@ func (_u *AgentDefinitionUpdateOne) sqlSave(ctx context.Context) (_node *AgentDe
 	}
 	if value, ok := _u.mutation.Namespace(); ok {
 		_spec.SetField(agentdefinition.FieldNamespace, field.TypeString, value)
-	}
-	if _u.mutation.NamespaceCleared() {
-		_spec.ClearField(agentdefinition.FieldNamespace, field.TypeString)
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(agentdefinition.FieldName, field.TypeString, value)

@@ -111,7 +111,8 @@ func (s *Server) handleListRegistryTeams(w http.ResponseWriter, r *http.Request)
 func (s *Server) handleRegistrySync(w http.ResponseWriter, r *http.Request) {
 	result, err := registry.Sync(r.Context(), s.db, s.specDirs)
 	if err != nil {
-		http.Error(w, "error syncing registry: "+err.Error(), http.StatusInternalServerError)
+		s.logger.Error("registry sync failed", "error", err)
+		http.Error(w, "error syncing registry", http.StatusInternalServerError)
 		return
 	}
 	writeJSON(w, http.StatusOK, result)

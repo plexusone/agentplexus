@@ -113,6 +113,8 @@ func ValidColumn(column string) bool {
 var (
 	// RepoNameValidator is a validator for the "repo_name" field. It is called by the builders before save.
 	RepoNameValidator func(string) error
+	// DefaultNamespace holds the default value on creation for the "namespace" field.
+	DefaultNamespace string
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
 	// QualifiedNameValidator is a validator for the "qualified_name" field. It is called by the builders before save.

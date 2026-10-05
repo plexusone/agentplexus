@@ -300,6 +300,10 @@ func (_c *AgentDefinitionCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *AgentDefinitionCreate) defaults() {
+	if _, ok := _c.mutation.Namespace(); !ok {
+		v := agentdefinition.DefaultNamespace
+		_c.mutation.SetNamespace(v)
+	}
 	if _, ok := _c.mutation.FirstSeenAt(); !ok {
 		v := agentdefinition.DefaultFirstSeenAt()
 		_c.mutation.SetFirstSeenAt(v)
@@ -331,6 +335,9 @@ func (_c *AgentDefinitionCreate) check() error {
 		if err := agentdefinition.RepoNameValidator(v); err != nil {
 			return &ValidationError{Name: "repo_name", err: fmt.Errorf(`ent: validator failed for field "AgentDefinition.repo_name": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.Namespace(); !ok {
+		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required field "AgentDefinition.namespace"`)}
 	}
 	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "AgentDefinition.name"`)}

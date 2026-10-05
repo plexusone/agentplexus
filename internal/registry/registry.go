@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -23,6 +24,13 @@ import (
 	entagentdef "github.com/plexusone/agentplexus/internal/ent/agentdefinition"
 	entteamdef "github.com/plexusone/agentplexus/internal/ent/teamdefinition"
 )
+
+// syncMu serializes Sync calls. The watcher-triggered resync and the
+// POST /api/registry/sync handler can otherwise run concurrently: both
+// can observe ent.IsNotFound for the same not-yet-registered agent or
+// team and both attempt Create, and the loser of that race fails on the
+// unique index and aborts its whole Sync call.
+var syncMu sync.Mutex
 
 // Result summarizes one Sync call.
 type Result struct {
@@ -46,6 +54,9 @@ func (r Result) String() string {
 // viewer already reads. Sync is idempotent: re-running it against
 // unchanged files only refreshes last_seen_at.
 func Sync(ctx context.Context, client *ent.Client, specDirs []string) (Result, error) {
+	syncMu.Lock()
+	defer syncMu.Unlock()
+
 	var result Result
 
 	for _, specDir := range specDirs {
@@ -287,11 +298,15 @@ func syncTeams(ctx context.Context, client *ent.Client, repoName, specDir string
 					SetOrchestrator(team.Orchestrator).
 					SetAgentNames(team.Agents).
 					SetSourcePath(sourcePath).
-					SetContentHash(hash).
-					ClearAgents().
-					AddAgentIDs(memberIDs...)
+					SetContentHash(hash)
 				stats.updated++
 			}
+			// Membership resolution depends on the agent registry, not just
+			// this team file's content, so it must be refreshed on every
+			// sync: an agent referenced by the roster can be registered (or
+			// re-identified) after this team file was last seen, and that
+			// shouldn't require touching team.json to pick up the edge.
+			update = update.ClearAgents().AddAgentIDs(memberIDs...)
 			if _, uerr := update.Save(ctx); uerr != nil {
 				return stats, fmt.Errorf("update team %s/%s: %w", repoName, team.Name, uerr)
 			}

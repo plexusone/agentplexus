@@ -31,7 +31,7 @@ func (AgentDefinition) Fields() []ent.Field {
 			NotEmpty().
 			Comment("Owning repository, e.g. agent-team-release"),
 		field.String("namespace").
-			Optional().
+			Default("").
 			Comment("Subdirectory namespace, if any"),
 		field.String("name").
 			NotEmpty().

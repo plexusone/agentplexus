@@ -245,22 +245,9 @@ func (m *AgentDefinitionMutation) OldNamespace(ctx context.Context) (v string, e
 	return oldValue.Namespace, nil
 }
 
-// ClearNamespace clears the value of the "namespace" field.
-func (m *AgentDefinitionMutation) ClearNamespace() {
-	m.namespace = nil
-	m.clearedFields[agentdefinition.FieldNamespace] = struct{}{}
-}
-
-// NamespaceCleared returns if the "namespace" field was cleared in this mutation.
-func (m *AgentDefinitionMutation) NamespaceCleared() bool {
-	_, ok := m.clearedFields[agentdefinition.FieldNamespace]
-	return ok
-}
-
 // ResetNamespace resets all changes to the "namespace" field.
 func (m *AgentDefinitionMutation) ResetNamespace() {
 	m.namespace = nil
-	delete(m.clearedFields, agentdefinition.FieldNamespace)
 }
 
 // SetName sets the "name" field.
@@ -1609,9 +1596,6 @@ func (m *AgentDefinitionMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *AgentDefinitionMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(agentdefinition.FieldNamespace) {
-		fields = append(fields, agentdefinition.FieldNamespace)
-	}
 	if m.FieldCleared(agentdefinition.FieldSourceRef) {
 		fields = append(fields, agentdefinition.FieldSourceRef)
 	}
@@ -1659,9 +1643,6 @@ func (m *AgentDefinitionMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *AgentDefinitionMutation) ClearField(name string) error {
 	switch name {
-	case agentdefinition.FieldNamespace:
-		m.ClearNamespace()
-		return nil
 	case agentdefinition.FieldSourceRef:
 		m.ClearSourceRef()
 		return nil
