@@ -56,8 +56,8 @@ github.com/ncruces/go-strftime v1.0.0 h1:HMFp8mLCTPp341M/ZnA4qaf7ZlsbTc+miZjCLOF
 github.com/ncruces/go-strftime v1.0.0/go.mod h1:Fwc5htZGVVkseilnfgOVb9mKy6w1naJmn9CehxcKcls=
 github.com/pb33f/ordered-map/v2 v2.3.1 h1:5319HDO0aw4DA4gzi+zv4FXU9UlSs3xGZ40wcP1nBjY=
 github.com/pb33f/ordered-map/v2 v2.3.1/go.mod h1:qxFQgd0PkVUtOMCkTapqotNgzRhMPL7VvaHKbd1HnmQ=
-github.com/plexusone/multi-agent-spec/sdk/go v0.8.0 h1:rut0+qqBhY2rQmw6eNwofEN/s+iPskTuxP/PA1vYUmY=
-github.com/plexusone/multi-agent-spec/sdk/go v0.8.0/go.mod h1:zpg+h9URlxNWbYguq6SFxw0OioulKXNKnSJ0dT2AWic=
+github.com/plexusone/multi-agent-spec v0.10.0 h1:bAvDTEIrLFRVa6Skk268o+SiBCn8ph4jrF3UvKh7yUM=
+github.com/plexusone/multi-agent-spec v0.10.0/go.mod h1:XLyEqfdOZcd6B91BM6iH0oL8ni3h8PsYiUSpTHwBrcs=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec h1:W09IVJc94icq4NjY3clb7Lk8O1qJ8BdBEF8z0ibU0rE=

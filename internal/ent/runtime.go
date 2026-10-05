@@ -5,15 +5,101 @@ package ent
 import (
 	"time"
 
-	"github.com/plexusone/agentplexus/internal/ent/schema"
-	"github.com/plexusone/agentplexus/internal/ent/view"
 	"github.com/google/uuid"
+	"github.com/plexusone/agentplexus/internal/ent/agentdefinition"
+	"github.com/plexusone/agentplexus/internal/ent/schema"
+	"github.com/plexusone/agentplexus/internal/ent/teamdefinition"
+	"github.com/plexusone/agentplexus/internal/ent/view"
 )
 
 // The init function reads all schema descriptors with runtime code
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	agentdefinitionFields := schema.AgentDefinition{}.Fields()
+	_ = agentdefinitionFields
+	// agentdefinitionDescRepoName is the schema descriptor for repo_name field.
+	agentdefinitionDescRepoName := agentdefinitionFields[1].Descriptor()
+	// agentdefinition.RepoNameValidator is a validator for the "repo_name" field. It is called by the builders before save.
+	agentdefinition.RepoNameValidator = agentdefinitionDescRepoName.Validators[0].(func(string) error)
+	// agentdefinitionDescName is the schema descriptor for name field.
+	agentdefinitionDescName := agentdefinitionFields[3].Descriptor()
+	// agentdefinition.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	agentdefinition.NameValidator = agentdefinitionDescName.Validators[0].(func(string) error)
+	// agentdefinitionDescQualifiedName is the schema descriptor for qualified_name field.
+	agentdefinitionDescQualifiedName := agentdefinitionFields[4].Descriptor()
+	// agentdefinition.QualifiedNameValidator is a validator for the "qualified_name" field. It is called by the builders before save.
+	agentdefinition.QualifiedNameValidator = agentdefinitionDescQualifiedName.Validators[0].(func(string) error)
+	// agentdefinitionDescSourcePath is the schema descriptor for source_path field.
+	agentdefinitionDescSourcePath := agentdefinitionFields[16].Descriptor()
+	// agentdefinition.SourcePathValidator is a validator for the "source_path" field. It is called by the builders before save.
+	agentdefinition.SourcePathValidator = agentdefinitionDescSourcePath.Validators[0].(func(string) error)
+	// agentdefinitionDescContentHash is the schema descriptor for content_hash field.
+	agentdefinitionDescContentHash := agentdefinitionFields[17].Descriptor()
+	// agentdefinition.ContentHashValidator is a validator for the "content_hash" field. It is called by the builders before save.
+	agentdefinition.ContentHashValidator = agentdefinitionDescContentHash.Validators[0].(func(string) error)
+	// agentdefinitionDescFirstSeenAt is the schema descriptor for first_seen_at field.
+	agentdefinitionDescFirstSeenAt := agentdefinitionFields[18].Descriptor()
+	// agentdefinition.DefaultFirstSeenAt holds the default value on creation for the first_seen_at field.
+	agentdefinition.DefaultFirstSeenAt = agentdefinitionDescFirstSeenAt.Default.(func() time.Time)
+	// agentdefinitionDescLastSeenAt is the schema descriptor for last_seen_at field.
+	agentdefinitionDescLastSeenAt := agentdefinitionFields[19].Descriptor()
+	// agentdefinition.DefaultLastSeenAt holds the default value on creation for the last_seen_at field.
+	agentdefinition.DefaultLastSeenAt = agentdefinitionDescLastSeenAt.Default.(func() time.Time)
+	// agentdefinitionDescCreatedAt is the schema descriptor for created_at field.
+	agentdefinitionDescCreatedAt := agentdefinitionFields[20].Descriptor()
+	// agentdefinition.DefaultCreatedAt holds the default value on creation for the created_at field.
+	agentdefinition.DefaultCreatedAt = agentdefinitionDescCreatedAt.Default.(func() time.Time)
+	// agentdefinitionDescUpdatedAt is the schema descriptor for updated_at field.
+	agentdefinitionDescUpdatedAt := agentdefinitionFields[21].Descriptor()
+	// agentdefinition.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	agentdefinition.DefaultUpdatedAt = agentdefinitionDescUpdatedAt.Default.(func() time.Time)
+	// agentdefinition.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	agentdefinition.UpdateDefaultUpdatedAt = agentdefinitionDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// agentdefinitionDescID is the schema descriptor for id field.
+	agentdefinitionDescID := agentdefinitionFields[0].Descriptor()
+	// agentdefinition.DefaultID holds the default value on creation for the id field.
+	agentdefinition.DefaultID = agentdefinitionDescID.Default.(func() uuid.UUID)
+	teamdefinitionFields := schema.TeamDefinition{}.Fields()
+	_ = teamdefinitionFields
+	// teamdefinitionDescRepoName is the schema descriptor for repo_name field.
+	teamdefinitionDescRepoName := teamdefinitionFields[1].Descriptor()
+	// teamdefinition.RepoNameValidator is a validator for the "repo_name" field. It is called by the builders before save.
+	teamdefinition.RepoNameValidator = teamdefinitionDescRepoName.Validators[0].(func(string) error)
+	// teamdefinitionDescName is the schema descriptor for name field.
+	teamdefinitionDescName := teamdefinitionFields[2].Descriptor()
+	// teamdefinition.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	teamdefinition.NameValidator = teamdefinitionDescName.Validators[0].(func(string) error)
+	// teamdefinitionDescSourcePath is the schema descriptor for source_path field.
+	teamdefinitionDescSourcePath := teamdefinitionFields[9].Descriptor()
+	// teamdefinition.SourcePathValidator is a validator for the "source_path" field. It is called by the builders before save.
+	teamdefinition.SourcePathValidator = teamdefinitionDescSourcePath.Validators[0].(func(string) error)
+	// teamdefinitionDescContentHash is the schema descriptor for content_hash field.
+	teamdefinitionDescContentHash := teamdefinitionFields[10].Descriptor()
+	// teamdefinition.ContentHashValidator is a validator for the "content_hash" field. It is called by the builders before save.
+	teamdefinition.ContentHashValidator = teamdefinitionDescContentHash.Validators[0].(func(string) error)
+	// teamdefinitionDescFirstSeenAt is the schema descriptor for first_seen_at field.
+	teamdefinitionDescFirstSeenAt := teamdefinitionFields[11].Descriptor()
+	// teamdefinition.DefaultFirstSeenAt holds the default value on creation for the first_seen_at field.
+	teamdefinition.DefaultFirstSeenAt = teamdefinitionDescFirstSeenAt.Default.(func() time.Time)
+	// teamdefinitionDescLastSeenAt is the schema descriptor for last_seen_at field.
+	teamdefinitionDescLastSeenAt := teamdefinitionFields[12].Descriptor()
+	// teamdefinition.DefaultLastSeenAt holds the default value on creation for the last_seen_at field.
+	teamdefinition.DefaultLastSeenAt = teamdefinitionDescLastSeenAt.Default.(func() time.Time)
+	// teamdefinitionDescCreatedAt is the schema descriptor for created_at field.
+	teamdefinitionDescCreatedAt := teamdefinitionFields[13].Descriptor()
+	// teamdefinition.DefaultCreatedAt holds the default value on creation for the created_at field.
+	teamdefinition.DefaultCreatedAt = teamdefinitionDescCreatedAt.Default.(func() time.Time)
+	// teamdefinitionDescUpdatedAt is the schema descriptor for updated_at field.
+	teamdefinitionDescUpdatedAt := teamdefinitionFields[14].Descriptor()
+	// teamdefinition.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	teamdefinition.DefaultUpdatedAt = teamdefinitionDescUpdatedAt.Default.(func() time.Time)
+	// teamdefinition.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	teamdefinition.UpdateDefaultUpdatedAt = teamdefinitionDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// teamdefinitionDescID is the schema descriptor for id field.
+	teamdefinitionDescID := teamdefinitionFields[0].Descriptor()
+	// teamdefinition.DefaultID holds the default value on creation for the id field.
+	teamdefinition.DefaultID = teamdefinitionDescID.Default.(func() uuid.UUID)
 	viewFields := schema.View{}.Fields()
 	_ = viewFields
 	// viewDescName is the schema descriptor for name field.

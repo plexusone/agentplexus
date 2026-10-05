@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"io/fs"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/plexusone/agentplexus/internal/ent"
+	"github.com/plexusone/agentplexus/internal/registry"
 	"github.com/plexusone/agentplexus/internal/watcher"
 )
 
@@ -58,6 +60,11 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("PUT /api/views/{id}", s.handleUpdateView)
 	s.mux.HandleFunc("DELETE /api/views/{id}", s.handleDeleteView)
 
+	// Registry routes (Agent Workforce inventory)
+	s.mux.HandleFunc("GET /api/registry/agents", s.handleListRegistryAgents)
+	s.mux.HandleFunc("GET /api/registry/teams", s.handleListRegistryTeams)
+	s.mux.HandleFunc("POST /api/registry/sync", s.handleRegistrySync)
+
 	// Serve embedded frontend (catch-all for non-API routes)
 	frontendSub, err := fs.Sub(frontendFS, "frontend")
 	if err != nil {
@@ -74,6 +81,7 @@ func (s *Server) ListenAndServe() error {
 	}
 	s.watcher = w
 	go s.watcher.Run()
+	go s.watchRegistrySync()
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", s.port),
@@ -83,6 +91,33 @@ func (s *Server) ListenAndServe() error {
 		IdleTimeout:  60 * time.Second,
 	}
 	return srv.ListenAndServe()
+}
+
+// watchRegistrySync re-syncs the agent/team registry whenever the spec
+// watcher reports a change, so the registry stays current without
+// requiring a server restart. A single worker goroutine runs syncs
+// serially; bursts of watcher events coalesce into at most one pending
+// sync via the buffered signal channel.
+func (s *Server) watchRegistrySync() {
+	dirty := make(chan struct{}, 1)
+
+	go func() {
+		for range dirty {
+			result, err := registry.Sync(context.Background(), s.db, s.specDirs)
+			if err != nil {
+				s.logger.Error("registry sync failed", "error", err)
+				continue
+			}
+			s.logger.Info("registry synced", "result", result.String())
+		}
+	}()
+
+	for range s.watcher.Events {
+		select {
+		case dirty <- struct{}{}:
+		default:
+		}
+	}
 }
 
 // Close cleans up server resources.

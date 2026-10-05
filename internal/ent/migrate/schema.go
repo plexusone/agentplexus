@@ -8,6 +8,75 @@ import (
 )
 
 var (
+	// AgentDefinitionsColumns holds the columns for the "agent_definitions" table.
+	AgentDefinitionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "repo_name", Type: field.TypeString},
+		{Name: "namespace", Type: field.TypeString, Nullable: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "qualified_name", Type: field.TypeString},
+		{Name: "source_ref", Type: field.TypeString, Nullable: true},
+		{Name: "registry_xrn", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "model", Type: field.TypeString, Nullable: true},
+		{Name: "icon", Type: field.TypeString, Nullable: true},
+		{Name: "role", Type: field.TypeString, Nullable: true},
+		{Name: "tools", Type: field.TypeJSON, Nullable: true},
+		{Name: "allowed_tools", Type: field.TypeJSON, Nullable: true},
+		{Name: "skills", Type: field.TypeJSON, Nullable: true},
+		{Name: "dependencies", Type: field.TypeJSON, Nullable: true},
+		{Name: "requires", Type: field.TypeJSON, Nullable: true},
+		{Name: "source_path", Type: field.TypeString},
+		{Name: "content_hash", Type: field.TypeString},
+		{Name: "first_seen_at", Type: field.TypeTime},
+		{Name: "last_seen_at", Type: field.TypeTime},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// AgentDefinitionsTable holds the schema information for the "agent_definitions" table.
+	AgentDefinitionsTable = &schema.Table{
+		Name:       "agent_definitions",
+		Columns:    AgentDefinitionsColumns,
+		PrimaryKey: []*schema.Column{AgentDefinitionsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "agentdefinition_repo_name_namespace_name",
+				Unique:  true,
+				Columns: []*schema.Column{AgentDefinitionsColumns[1], AgentDefinitionsColumns[2], AgentDefinitionsColumns[3]},
+			},
+		},
+	}
+	// TeamDefinitionsColumns holds the columns for the "team_definitions" table.
+	TeamDefinitionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "repo_name", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString},
+		{Name: "source_ref", Type: field.TypeString, Nullable: true},
+		{Name: "registry_xrn", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "version", Type: field.TypeString, Nullable: true},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "orchestrator", Type: field.TypeString, Nullable: true},
+		{Name: "agent_names", Type: field.TypeJSON, Nullable: true},
+		{Name: "source_path", Type: field.TypeString},
+		{Name: "content_hash", Type: field.TypeString},
+		{Name: "first_seen_at", Type: field.TypeTime},
+		{Name: "last_seen_at", Type: field.TypeTime},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// TeamDefinitionsTable holds the schema information for the "team_definitions" table.
+	TeamDefinitionsTable = &schema.Table{
+		Name:       "team_definitions",
+		Columns:    TeamDefinitionsColumns,
+		PrimaryKey: []*schema.Column{TeamDefinitionsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "teamdefinition_repo_name_name",
+				Unique:  true,
+				Columns: []*schema.Column{TeamDefinitionsColumns[1], TeamDefinitionsColumns[2]},
+			},
+		},
+	}
 	// ViewsColumns holds the columns for the "views" table.
 	ViewsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -25,11 +94,41 @@ var (
 		Columns:    ViewsColumns,
 		PrimaryKey: []*schema.Column{ViewsColumns[0]},
 	}
+	// TeamDefinitionAgentsColumns holds the columns for the "team_definition_agents" table.
+	TeamDefinitionAgentsColumns = []*schema.Column{
+		{Name: "team_definition_id", Type: field.TypeUUID},
+		{Name: "agent_definition_id", Type: field.TypeUUID},
+	}
+	// TeamDefinitionAgentsTable holds the schema information for the "team_definition_agents" table.
+	TeamDefinitionAgentsTable = &schema.Table{
+		Name:       "team_definition_agents",
+		Columns:    TeamDefinitionAgentsColumns,
+		PrimaryKey: []*schema.Column{TeamDefinitionAgentsColumns[0], TeamDefinitionAgentsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "team_definition_agents_team_definition_id",
+				Columns:    []*schema.Column{TeamDefinitionAgentsColumns[0]},
+				RefColumns: []*schema.Column{TeamDefinitionsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "team_definition_agents_agent_definition_id",
+				Columns:    []*schema.Column{TeamDefinitionAgentsColumns[1]},
+				RefColumns: []*schema.Column{AgentDefinitionsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AgentDefinitionsTable,
+		TeamDefinitionsTable,
 		ViewsTable,
+		TeamDefinitionAgentsTable,
 	}
 )
 
 func init() {
+	TeamDefinitionAgentsTable.ForeignKeys[0].RefTable = TeamDefinitionsTable
+	TeamDefinitionAgentsTable.ForeignKeys[1].RefTable = AgentDefinitionsTable
 }

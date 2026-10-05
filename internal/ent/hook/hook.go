@@ -9,6 +9,30 @@ import (
 	"github.com/plexusone/agentplexus/internal/ent"
 )
 
+// The AgentDefinitionFunc type is an adapter to allow the use of ordinary
+// function as AgentDefinition mutator.
+type AgentDefinitionFunc func(context.Context, *ent.AgentDefinitionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AgentDefinitionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentDefinitionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentDefinitionMutation", m)
+}
+
+// The TeamDefinitionFunc type is an adapter to allow the use of ordinary
+// function as TeamDefinition mutator.
+type TeamDefinitionFunc func(context.Context, *ent.TeamDefinitionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TeamDefinitionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TeamDefinitionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TeamDefinitionMutation", m)
+}
+
 // The ViewFunc type is an adapter to allow the use of ordinary
 // function as View mutator.
 type ViewFunc func(context.Context, *ent.ViewMutation) (ent.Value, error)
