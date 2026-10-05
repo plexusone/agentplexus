@@ -11,9 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/plexusone/agentplexus/internal/ent/predicate"
 	"github.com/plexusone/agentplexus/internal/ent/view"
-	"github.com/google/uuid"
 )
 
 // ViewQuery is the builder for querying View entities.

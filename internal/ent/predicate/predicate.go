@@ -6,5 +6,11 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// AgentDefinition is the predicate function for agentdefinition builders.
+type AgentDefinition func(*sql.Selector)
+
+// TeamDefinition is the predicate function for teamdefinition builders.
+type TeamDefinition func(*sql.Selector)
+
 // View is the predicate function for view builders.
 type View func(*sql.Selector)

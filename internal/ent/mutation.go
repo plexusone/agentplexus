@@ -11,10 +11,12 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
+	"github.com/plexusone/agentplexus/internal/ent/agentdefinition"
 	"github.com/plexusone/agentplexus/internal/ent/predicate"
 	"github.com/plexusone/agentplexus/internal/ent/schema"
+	"github.com/plexusone/agentplexus/internal/ent/teamdefinition"
 	"github.com/plexusone/agentplexus/internal/ent/view"
-	"github.com/google/uuid"
 )
 
 const (
@@ -26,8 +28,3073 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeView = "View"
+	TypeAgentDefinition = "AgentDefinition"
+	TypeTeamDefinition  = "TeamDefinition"
+	TypeView            = "View"
 )
+
+// AgentDefinitionMutation represents an operation that mutates the AgentDefinition nodes in the graph.
+type AgentDefinitionMutation struct {
+	config
+	op                  Op
+	typ                 string
+	id                  *uuid.UUID
+	repo_name           *string
+	namespace           *string
+	name                *string
+	qualified_name      *string
+	source_ref          *string
+	registry_xrn        *string
+	description         *string
+	model               *string
+	icon                *string
+	role                *string
+	tools               *[]string
+	appendtools         []string
+	allowed_tools       *[]string
+	appendallowed_tools []string
+	skills              *[]string
+	appendskills        []string
+	dependencies        *[]string
+	appenddependencies  []string
+	requires            *[]string
+	appendrequires      []string
+	source_path         *string
+	content_hash        *string
+	first_seen_at       *time.Time
+	last_seen_at        *time.Time
+	created_at          *time.Time
+	updated_at          *time.Time
+	clearedFields       map[string]struct{}
+	teams               map[uuid.UUID]struct{}
+	removedteams        map[uuid.UUID]struct{}
+	clearedteams        bool
+	done                bool
+	oldValue            func(context.Context) (*AgentDefinition, error)
+	predicates          []predicate.AgentDefinition
+}
+
+var _ ent.Mutation = (*AgentDefinitionMutation)(nil)
+
+// agentdefinitionOption allows management of the mutation configuration using functional options.
+type agentdefinitionOption func(*AgentDefinitionMutation)
+
+// newAgentDefinitionMutation creates new mutation for the AgentDefinition entity.
+func newAgentDefinitionMutation(c config, op Op, opts ...agentdefinitionOption) *AgentDefinitionMutation {
+	m := &AgentDefinitionMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeAgentDefinition,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withAgentDefinitionID sets the ID field of the mutation.
+func withAgentDefinitionID(id uuid.UUID) agentdefinitionOption {
+	return func(m *AgentDefinitionMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *AgentDefinition
+		)
+		m.oldValue = func(ctx context.Context) (*AgentDefinition, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().AgentDefinition.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withAgentDefinition sets the old AgentDefinition of the mutation.
+func withAgentDefinition(node *AgentDefinition) agentdefinitionOption {
+	return func(m *AgentDefinitionMutation) {
+		m.oldValue = func(context.Context) (*AgentDefinition, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m AgentDefinitionMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m AgentDefinitionMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of AgentDefinition entities.
+func (m *AgentDefinitionMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *AgentDefinitionMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *AgentDefinitionMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().AgentDefinition.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetRepoName sets the "repo_name" field.
+func (m *AgentDefinitionMutation) SetRepoName(s string) {
+	m.repo_name = &s
+}
+
+// RepoName returns the value of the "repo_name" field in the mutation.
+func (m *AgentDefinitionMutation) RepoName() (r string, exists bool) {
+	v := m.repo_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRepoName returns the old "repo_name" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldRepoName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRepoName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRepoName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRepoName: %w", err)
+	}
+	return oldValue.RepoName, nil
+}
+
+// ResetRepoName resets all changes to the "repo_name" field.
+func (m *AgentDefinitionMutation) ResetRepoName() {
+	m.repo_name = nil
+}
+
+// SetNamespace sets the "namespace" field.
+func (m *AgentDefinitionMutation) SetNamespace(s string) {
+	m.namespace = &s
+}
+
+// Namespace returns the value of the "namespace" field in the mutation.
+func (m *AgentDefinitionMutation) Namespace() (r string, exists bool) {
+	v := m.namespace
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNamespace returns the old "namespace" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldNamespace(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNamespace is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNamespace requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNamespace: %w", err)
+	}
+	return oldValue.Namespace, nil
+}
+
+// ResetNamespace resets all changes to the "namespace" field.
+func (m *AgentDefinitionMutation) ResetNamespace() {
+	m.namespace = nil
+}
+
+// SetName sets the "name" field.
+func (m *AgentDefinitionMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *AgentDefinitionMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *AgentDefinitionMutation) ResetName() {
+	m.name = nil
+}
+
+// SetQualifiedName sets the "qualified_name" field.
+func (m *AgentDefinitionMutation) SetQualifiedName(s string) {
+	m.qualified_name = &s
+}
+
+// QualifiedName returns the value of the "qualified_name" field in the mutation.
+func (m *AgentDefinitionMutation) QualifiedName() (r string, exists bool) {
+	v := m.qualified_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldQualifiedName returns the old "qualified_name" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldQualifiedName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldQualifiedName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldQualifiedName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldQualifiedName: %w", err)
+	}
+	return oldValue.QualifiedName, nil
+}
+
+// ResetQualifiedName resets all changes to the "qualified_name" field.
+func (m *AgentDefinitionMutation) ResetQualifiedName() {
+	m.qualified_name = nil
+}
+
+// SetSourceRef sets the "source_ref" field.
+func (m *AgentDefinitionMutation) SetSourceRef(s string) {
+	m.source_ref = &s
+}
+
+// SourceRef returns the value of the "source_ref" field in the mutation.
+func (m *AgentDefinitionMutation) SourceRef() (r string, exists bool) {
+	v := m.source_ref
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSourceRef returns the old "source_ref" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldSourceRef(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSourceRef is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSourceRef requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSourceRef: %w", err)
+	}
+	return oldValue.SourceRef, nil
+}
+
+// ClearSourceRef clears the value of the "source_ref" field.
+func (m *AgentDefinitionMutation) ClearSourceRef() {
+	m.source_ref = nil
+	m.clearedFields[agentdefinition.FieldSourceRef] = struct{}{}
+}
+
+// SourceRefCleared returns if the "source_ref" field was cleared in this mutation.
+func (m *AgentDefinitionMutation) SourceRefCleared() bool {
+	_, ok := m.clearedFields[agentdefinition.FieldSourceRef]
+	return ok
+}
+
+// ResetSourceRef resets all changes to the "source_ref" field.
+func (m *AgentDefinitionMutation) ResetSourceRef() {
+	m.source_ref = nil
+	delete(m.clearedFields, agentdefinition.FieldSourceRef)
+}
+
+// SetRegistryXrn sets the "registry_xrn" field.
+func (m *AgentDefinitionMutation) SetRegistryXrn(s string) {
+	m.registry_xrn = &s
+}
+
+// RegistryXrn returns the value of the "registry_xrn" field in the mutation.
+func (m *AgentDefinitionMutation) RegistryXrn() (r string, exists bool) {
+	v := m.registry_xrn
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRegistryXrn returns the old "registry_xrn" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldRegistryXrn(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRegistryXrn is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRegistryXrn requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRegistryXrn: %w", err)
+	}
+	return oldValue.RegistryXrn, nil
+}
+
+// ClearRegistryXrn clears the value of the "registry_xrn" field.
+func (m *AgentDefinitionMutation) ClearRegistryXrn() {
+	m.registry_xrn = nil
+	m.clearedFields[agentdefinition.FieldRegistryXrn] = struct{}{}
+}
+
+// RegistryXrnCleared returns if the "registry_xrn" field was cleared in this mutation.
+func (m *AgentDefinitionMutation) RegistryXrnCleared() bool {
+	_, ok := m.clearedFields[agentdefinition.FieldRegistryXrn]
+	return ok
+}
+
+// ResetRegistryXrn resets all changes to the "registry_xrn" field.
+func (m *AgentDefinitionMutation) ResetRegistryXrn() {
+	m.registry_xrn = nil
+	delete(m.clearedFields, agentdefinition.FieldRegistryXrn)
+}
+
+// SetDescription sets the "description" field.
+func (m *AgentDefinitionMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *AgentDefinitionMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ClearDescription clears the value of the "description" field.
+func (m *AgentDefinitionMutation) ClearDescription() {
+	m.description = nil
+	m.clearedFields[agentdefinition.FieldDescription] = struct{}{}
+}
+
+// DescriptionCleared returns if the "description" field was cleared in this mutation.
+func (m *AgentDefinitionMutation) DescriptionCleared() bool {
+	_, ok := m.clearedFields[agentdefinition.FieldDescription]
+	return ok
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *AgentDefinitionMutation) ResetDescription() {
+	m.description = nil
+	delete(m.clearedFields, agentdefinition.FieldDescription)
+}
+
+// SetModel sets the "model" field.
+func (m *AgentDefinitionMutation) SetModel(s string) {
+	m.model = &s
+}
+
+// Model returns the value of the "model" field in the mutation.
+func (m *AgentDefinitionMutation) Model() (r string, exists bool) {
+	v := m.model
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldModel returns the old "model" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldModel(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldModel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldModel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldModel: %w", err)
+	}
+	return oldValue.Model, nil
+}
+
+// ClearModel clears the value of the "model" field.
+func (m *AgentDefinitionMutation) ClearModel() {
+	m.model = nil
+	m.clearedFields[agentdefinition.FieldModel] = struct{}{}
+}
+
+// ModelCleared returns if the "model" field was cleared in this mutation.
+func (m *AgentDefinitionMutation) ModelCleared() bool {
+	_, ok := m.clearedFields[agentdefinition.FieldModel]
+	return ok
+}
+
+// ResetModel resets all changes to the "model" field.
+func (m *AgentDefinitionMutation) ResetModel() {
+	m.model = nil
+	delete(m.clearedFields, agentdefinition.FieldModel)
+}
+
+// SetIcon sets the "icon" field.
+func (m *AgentDefinitionMutation) SetIcon(s string) {
+	m.icon = &s
+}
+
+// Icon returns the value of the "icon" field in the mutation.
+func (m *AgentDefinitionMutation) Icon() (r string, exists bool) {
+	v := m.icon
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIcon returns the old "icon" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldIcon(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIcon is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIcon requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIcon: %w", err)
+	}
+	return oldValue.Icon, nil
+}
+
+// ClearIcon clears the value of the "icon" field.
+func (m *AgentDefinitionMutation) ClearIcon() {
+	m.icon = nil
+	m.clearedFields[agentdefinition.FieldIcon] = struct{}{}
+}
+
+// IconCleared returns if the "icon" field was cleared in this mutation.
+func (m *AgentDefinitionMutation) IconCleared() bool {
+	_, ok := m.clearedFields[agentdefinition.FieldIcon]
+	return ok
+}
+
+// ResetIcon resets all changes to the "icon" field.
+func (m *AgentDefinitionMutation) ResetIcon() {
+	m.icon = nil
+	delete(m.clearedFields, agentdefinition.FieldIcon)
+}
+
+// SetRole sets the "role" field.
+func (m *AgentDefinitionMutation) SetRole(s string) {
+	m.role = &s
+}
+
+// Role returns the value of the "role" field in the mutation.
+func (m *AgentDefinitionMutation) Role() (r string, exists bool) {
+	v := m.role
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRole returns the old "role" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldRole(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRole is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRole requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRole: %w", err)
+	}
+	return oldValue.Role, nil
+}
+
+// ClearRole clears the value of the "role" field.
+func (m *AgentDefinitionMutation) ClearRole() {
+	m.role = nil
+	m.clearedFields[agentdefinition.FieldRole] = struct{}{}
+}
+
+// RoleCleared returns if the "role" field was cleared in this mutation.
+func (m *AgentDefinitionMutation) RoleCleared() bool {
+	_, ok := m.clearedFields[agentdefinition.FieldRole]
+	return ok
+}
+
+// ResetRole resets all changes to the "role" field.
+func (m *AgentDefinitionMutation) ResetRole() {
+	m.role = nil
+	delete(m.clearedFields, agentdefinition.FieldRole)
+}
+
+// SetTools sets the "tools" field.
+func (m *AgentDefinitionMutation) SetTools(s []string) {
+	m.tools = &s
+	m.appendtools = nil
+}
+
+// Tools returns the value of the "tools" field in the mutation.
+func (m *AgentDefinitionMutation) Tools() (r []string, exists bool) {
+	v := m.tools
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTools returns the old "tools" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldTools(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTools is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTools requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTools: %w", err)
+	}
+	return oldValue.Tools, nil
+}
+
+// AppendTools adds s to the "tools" field.
+func (m *AgentDefinitionMutation) AppendTools(s []string) {
+	m.appendtools = append(m.appendtools, s...)
+}
+
+// AppendedTools returns the list of values that were appended to the "tools" field in this mutation.
+func (m *AgentDefinitionMutation) AppendedTools() ([]string, bool) {
+	if len(m.appendtools) == 0 {
+		return nil, false
+	}
+	return m.appendtools, true
+}
+
+// ClearTools clears the value of the "tools" field.
+func (m *AgentDefinitionMutation) ClearTools() {
+	m.tools = nil
+	m.appendtools = nil
+	m.clearedFields[agentdefinition.FieldTools] = struct{}{}
+}
+
+// ToolsCleared returns if the "tools" field was cleared in this mutation.
+func (m *AgentDefinitionMutation) ToolsCleared() bool {
+	_, ok := m.clearedFields[agentdefinition.FieldTools]
+	return ok
+}
+
+// ResetTools resets all changes to the "tools" field.
+func (m *AgentDefinitionMutation) ResetTools() {
+	m.tools = nil
+	m.appendtools = nil
+	delete(m.clearedFields, agentdefinition.FieldTools)
+}
+
+// SetAllowedTools sets the "allowed_tools" field.
+func (m *AgentDefinitionMutation) SetAllowedTools(s []string) {
+	m.allowed_tools = &s
+	m.appendallowed_tools = nil
+}
+
+// AllowedTools returns the value of the "allowed_tools" field in the mutation.
+func (m *AgentDefinitionMutation) AllowedTools() (r []string, exists bool) {
+	v := m.allowed_tools
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAllowedTools returns the old "allowed_tools" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldAllowedTools(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAllowedTools is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAllowedTools requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAllowedTools: %w", err)
+	}
+	return oldValue.AllowedTools, nil
+}
+
+// AppendAllowedTools adds s to the "allowed_tools" field.
+func (m *AgentDefinitionMutation) AppendAllowedTools(s []string) {
+	m.appendallowed_tools = append(m.appendallowed_tools, s...)
+}
+
+// AppendedAllowedTools returns the list of values that were appended to the "allowed_tools" field in this mutation.
+func (m *AgentDefinitionMutation) AppendedAllowedTools() ([]string, bool) {
+	if len(m.appendallowed_tools) == 0 {
+		return nil, false
+	}
+	return m.appendallowed_tools, true
+}
+
+// ClearAllowedTools clears the value of the "allowed_tools" field.
+func (m *AgentDefinitionMutation) ClearAllowedTools() {
+	m.allowed_tools = nil
+	m.appendallowed_tools = nil
+	m.clearedFields[agentdefinition.FieldAllowedTools] = struct{}{}
+}
+
+// AllowedToolsCleared returns if the "allowed_tools" field was cleared in this mutation.
+func (m *AgentDefinitionMutation) AllowedToolsCleared() bool {
+	_, ok := m.clearedFields[agentdefinition.FieldAllowedTools]
+	return ok
+}
+
+// ResetAllowedTools resets all changes to the "allowed_tools" field.
+func (m *AgentDefinitionMutation) ResetAllowedTools() {
+	m.allowed_tools = nil
+	m.appendallowed_tools = nil
+	delete(m.clearedFields, agentdefinition.FieldAllowedTools)
+}
+
+// SetSkills sets the "skills" field.
+func (m *AgentDefinitionMutation) SetSkills(s []string) {
+	m.skills = &s
+	m.appendskills = nil
+}
+
+// Skills returns the value of the "skills" field in the mutation.
+func (m *AgentDefinitionMutation) Skills() (r []string, exists bool) {
+	v := m.skills
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSkills returns the old "skills" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldSkills(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSkills is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSkills requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSkills: %w", err)
+	}
+	return oldValue.Skills, nil
+}
+
+// AppendSkills adds s to the "skills" field.
+func (m *AgentDefinitionMutation) AppendSkills(s []string) {
+	m.appendskills = append(m.appendskills, s...)
+}
+
+// AppendedSkills returns the list of values that were appended to the "skills" field in this mutation.
+func (m *AgentDefinitionMutation) AppendedSkills() ([]string, bool) {
+	if len(m.appendskills) == 0 {
+		return nil, false
+	}
+	return m.appendskills, true
+}
+
+// ClearSkills clears the value of the "skills" field.
+func (m *AgentDefinitionMutation) ClearSkills() {
+	m.skills = nil
+	m.appendskills = nil
+	m.clearedFields[agentdefinition.FieldSkills] = struct{}{}
+}
+
+// SkillsCleared returns if the "skills" field was cleared in this mutation.
+func (m *AgentDefinitionMutation) SkillsCleared() bool {
+	_, ok := m.clearedFields[agentdefinition.FieldSkills]
+	return ok
+}
+
+// ResetSkills resets all changes to the "skills" field.
+func (m *AgentDefinitionMutation) ResetSkills() {
+	m.skills = nil
+	m.appendskills = nil
+	delete(m.clearedFields, agentdefinition.FieldSkills)
+}
+
+// SetDependencies sets the "dependencies" field.
+func (m *AgentDefinitionMutation) SetDependencies(s []string) {
+	m.dependencies = &s
+	m.appenddependencies = nil
+}
+
+// Dependencies returns the value of the "dependencies" field in the mutation.
+func (m *AgentDefinitionMutation) Dependencies() (r []string, exists bool) {
+	v := m.dependencies
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDependencies returns the old "dependencies" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldDependencies(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDependencies is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDependencies requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDependencies: %w", err)
+	}
+	return oldValue.Dependencies, nil
+}
+
+// AppendDependencies adds s to the "dependencies" field.
+func (m *AgentDefinitionMutation) AppendDependencies(s []string) {
+	m.appenddependencies = append(m.appenddependencies, s...)
+}
+
+// AppendedDependencies returns the list of values that were appended to the "dependencies" field in this mutation.
+func (m *AgentDefinitionMutation) AppendedDependencies() ([]string, bool) {
+	if len(m.appenddependencies) == 0 {
+		return nil, false
+	}
+	return m.appenddependencies, true
+}
+
+// ClearDependencies clears the value of the "dependencies" field.
+func (m *AgentDefinitionMutation) ClearDependencies() {
+	m.dependencies = nil
+	m.appenddependencies = nil
+	m.clearedFields[agentdefinition.FieldDependencies] = struct{}{}
+}
+
+// DependenciesCleared returns if the "dependencies" field was cleared in this mutation.
+func (m *AgentDefinitionMutation) DependenciesCleared() bool {
+	_, ok := m.clearedFields[agentdefinition.FieldDependencies]
+	return ok
+}
+
+// ResetDependencies resets all changes to the "dependencies" field.
+func (m *AgentDefinitionMutation) ResetDependencies() {
+	m.dependencies = nil
+	m.appenddependencies = nil
+	delete(m.clearedFields, agentdefinition.FieldDependencies)
+}
+
+// SetRequires sets the "requires" field.
+func (m *AgentDefinitionMutation) SetRequires(s []string) {
+	m.requires = &s
+	m.appendrequires = nil
+}
+
+// Requires returns the value of the "requires" field in the mutation.
+func (m *AgentDefinitionMutation) Requires() (r []string, exists bool) {
+	v := m.requires
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequires returns the old "requires" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldRequires(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequires is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequires requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequires: %w", err)
+	}
+	return oldValue.Requires, nil
+}
+
+// AppendRequires adds s to the "requires" field.
+func (m *AgentDefinitionMutation) AppendRequires(s []string) {
+	m.appendrequires = append(m.appendrequires, s...)
+}
+
+// AppendedRequires returns the list of values that were appended to the "requires" field in this mutation.
+func (m *AgentDefinitionMutation) AppendedRequires() ([]string, bool) {
+	if len(m.appendrequires) == 0 {
+		return nil, false
+	}
+	return m.appendrequires, true
+}
+
+// ClearRequires clears the value of the "requires" field.
+func (m *AgentDefinitionMutation) ClearRequires() {
+	m.requires = nil
+	m.appendrequires = nil
+	m.clearedFields[agentdefinition.FieldRequires] = struct{}{}
+}
+
+// RequiresCleared returns if the "requires" field was cleared in this mutation.
+func (m *AgentDefinitionMutation) RequiresCleared() bool {
+	_, ok := m.clearedFields[agentdefinition.FieldRequires]
+	return ok
+}
+
+// ResetRequires resets all changes to the "requires" field.
+func (m *AgentDefinitionMutation) ResetRequires() {
+	m.requires = nil
+	m.appendrequires = nil
+	delete(m.clearedFields, agentdefinition.FieldRequires)
+}
+
+// SetSourcePath sets the "source_path" field.
+func (m *AgentDefinitionMutation) SetSourcePath(s string) {
+	m.source_path = &s
+}
+
+// SourcePath returns the value of the "source_path" field in the mutation.
+func (m *AgentDefinitionMutation) SourcePath() (r string, exists bool) {
+	v := m.source_path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSourcePath returns the old "source_path" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldSourcePath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSourcePath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSourcePath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSourcePath: %w", err)
+	}
+	return oldValue.SourcePath, nil
+}
+
+// ResetSourcePath resets all changes to the "source_path" field.
+func (m *AgentDefinitionMutation) ResetSourcePath() {
+	m.source_path = nil
+}
+
+// SetContentHash sets the "content_hash" field.
+func (m *AgentDefinitionMutation) SetContentHash(s string) {
+	m.content_hash = &s
+}
+
+// ContentHash returns the value of the "content_hash" field in the mutation.
+func (m *AgentDefinitionMutation) ContentHash() (r string, exists bool) {
+	v := m.content_hash
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContentHash returns the old "content_hash" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldContentHash(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContentHash is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContentHash requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContentHash: %w", err)
+	}
+	return oldValue.ContentHash, nil
+}
+
+// ResetContentHash resets all changes to the "content_hash" field.
+func (m *AgentDefinitionMutation) ResetContentHash() {
+	m.content_hash = nil
+}
+
+// SetFirstSeenAt sets the "first_seen_at" field.
+func (m *AgentDefinitionMutation) SetFirstSeenAt(t time.Time) {
+	m.first_seen_at = &t
+}
+
+// FirstSeenAt returns the value of the "first_seen_at" field in the mutation.
+func (m *AgentDefinitionMutation) FirstSeenAt() (r time.Time, exists bool) {
+	v := m.first_seen_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFirstSeenAt returns the old "first_seen_at" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldFirstSeenAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFirstSeenAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFirstSeenAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFirstSeenAt: %w", err)
+	}
+	return oldValue.FirstSeenAt, nil
+}
+
+// ResetFirstSeenAt resets all changes to the "first_seen_at" field.
+func (m *AgentDefinitionMutation) ResetFirstSeenAt() {
+	m.first_seen_at = nil
+}
+
+// SetLastSeenAt sets the "last_seen_at" field.
+func (m *AgentDefinitionMutation) SetLastSeenAt(t time.Time) {
+	m.last_seen_at = &t
+}
+
+// LastSeenAt returns the value of the "last_seen_at" field in the mutation.
+func (m *AgentDefinitionMutation) LastSeenAt() (r time.Time, exists bool) {
+	v := m.last_seen_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastSeenAt returns the old "last_seen_at" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldLastSeenAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastSeenAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastSeenAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastSeenAt: %w", err)
+	}
+	return oldValue.LastSeenAt, nil
+}
+
+// ResetLastSeenAt resets all changes to the "last_seen_at" field.
+func (m *AgentDefinitionMutation) ResetLastSeenAt() {
+	m.last_seen_at = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *AgentDefinitionMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *AgentDefinitionMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *AgentDefinitionMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *AgentDefinitionMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *AgentDefinitionMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the AgentDefinition entity.
+// If the AgentDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentDefinitionMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *AgentDefinitionMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// AddTeamIDs adds the "teams" edge to the TeamDefinition entity by ids.
+func (m *AgentDefinitionMutation) AddTeamIDs(ids ...uuid.UUID) {
+	if m.teams == nil {
+		m.teams = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.teams[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTeams clears the "teams" edge to the TeamDefinition entity.
+func (m *AgentDefinitionMutation) ClearTeams() {
+	m.clearedteams = true
+}
+
+// TeamsCleared reports if the "teams" edge to the TeamDefinition entity was cleared.
+func (m *AgentDefinitionMutation) TeamsCleared() bool {
+	return m.clearedteams
+}
+
+// RemoveTeamIDs removes the "teams" edge to the TeamDefinition entity by IDs.
+func (m *AgentDefinitionMutation) RemoveTeamIDs(ids ...uuid.UUID) {
+	if m.removedteams == nil {
+		m.removedteams = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.teams, ids[i])
+		m.removedteams[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTeams returns the removed IDs of the "teams" edge to the TeamDefinition entity.
+func (m *AgentDefinitionMutation) RemovedTeamsIDs() (ids []uuid.UUID) {
+	for id := range m.removedteams {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TeamsIDs returns the "teams" edge IDs in the mutation.
+func (m *AgentDefinitionMutation) TeamsIDs() (ids []uuid.UUID) {
+	for id := range m.teams {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTeams resets all changes to the "teams" edge.
+func (m *AgentDefinitionMutation) ResetTeams() {
+	m.teams = nil
+	m.clearedteams = false
+	m.removedteams = nil
+}
+
+// Where appends a list predicates to the AgentDefinitionMutation builder.
+func (m *AgentDefinitionMutation) Where(ps ...predicate.AgentDefinition) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the AgentDefinitionMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *AgentDefinitionMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.AgentDefinition, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *AgentDefinitionMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *AgentDefinitionMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (AgentDefinition).
+func (m *AgentDefinitionMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *AgentDefinitionMutation) Fields() []string {
+	fields := make([]string, 0, 21)
+	if m.repo_name != nil {
+		fields = append(fields, agentdefinition.FieldRepoName)
+	}
+	if m.namespace != nil {
+		fields = append(fields, agentdefinition.FieldNamespace)
+	}
+	if m.name != nil {
+		fields = append(fields, agentdefinition.FieldName)
+	}
+	if m.qualified_name != nil {
+		fields = append(fields, agentdefinition.FieldQualifiedName)
+	}
+	if m.source_ref != nil {
+		fields = append(fields, agentdefinition.FieldSourceRef)
+	}
+	if m.registry_xrn != nil {
+		fields = append(fields, agentdefinition.FieldRegistryXrn)
+	}
+	if m.description != nil {
+		fields = append(fields, agentdefinition.FieldDescription)
+	}
+	if m.model != nil {
+		fields = append(fields, agentdefinition.FieldModel)
+	}
+	if m.icon != nil {
+		fields = append(fields, agentdefinition.FieldIcon)
+	}
+	if m.role != nil {
+		fields = append(fields, agentdefinition.FieldRole)
+	}
+	if m.tools != nil {
+		fields = append(fields, agentdefinition.FieldTools)
+	}
+	if m.allowed_tools != nil {
+		fields = append(fields, agentdefinition.FieldAllowedTools)
+	}
+	if m.skills != nil {
+		fields = append(fields, agentdefinition.FieldSkills)
+	}
+	if m.dependencies != nil {
+		fields = append(fields, agentdefinition.FieldDependencies)
+	}
+	if m.requires != nil {
+		fields = append(fields, agentdefinition.FieldRequires)
+	}
+	if m.source_path != nil {
+		fields = append(fields, agentdefinition.FieldSourcePath)
+	}
+	if m.content_hash != nil {
+		fields = append(fields, agentdefinition.FieldContentHash)
+	}
+	if m.first_seen_at != nil {
+		fields = append(fields, agentdefinition.FieldFirstSeenAt)
+	}
+	if m.last_seen_at != nil {
+		fields = append(fields, agentdefinition.FieldLastSeenAt)
+	}
+	if m.created_at != nil {
+		fields = append(fields, agentdefinition.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, agentdefinition.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *AgentDefinitionMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case agentdefinition.FieldRepoName:
+		return m.RepoName()
+	case agentdefinition.FieldNamespace:
+		return m.Namespace()
+	case agentdefinition.FieldName:
+		return m.Name()
+	case agentdefinition.FieldQualifiedName:
+		return m.QualifiedName()
+	case agentdefinition.FieldSourceRef:
+		return m.SourceRef()
+	case agentdefinition.FieldRegistryXrn:
+		return m.RegistryXrn()
+	case agentdefinition.FieldDescription:
+		return m.Description()
+	case agentdefinition.FieldModel:
+		return m.Model()
+	case agentdefinition.FieldIcon:
+		return m.Icon()
+	case agentdefinition.FieldRole:
+		return m.Role()
+	case agentdefinition.FieldTools:
+		return m.Tools()
+	case agentdefinition.FieldAllowedTools:
+		return m.AllowedTools()
+	case agentdefinition.FieldSkills:
+		return m.Skills()
+	case agentdefinition.FieldDependencies:
+		return m.Dependencies()
+	case agentdefinition.FieldRequires:
+		return m.Requires()
+	case agentdefinition.FieldSourcePath:
+		return m.SourcePath()
+	case agentdefinition.FieldContentHash:
+		return m.ContentHash()
+	case agentdefinition.FieldFirstSeenAt:
+		return m.FirstSeenAt()
+	case agentdefinition.FieldLastSeenAt:
+		return m.LastSeenAt()
+	case agentdefinition.FieldCreatedAt:
+		return m.CreatedAt()
+	case agentdefinition.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *AgentDefinitionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case agentdefinition.FieldRepoName:
+		return m.OldRepoName(ctx)
+	case agentdefinition.FieldNamespace:
+		return m.OldNamespace(ctx)
+	case agentdefinition.FieldName:
+		return m.OldName(ctx)
+	case agentdefinition.FieldQualifiedName:
+		return m.OldQualifiedName(ctx)
+	case agentdefinition.FieldSourceRef:
+		return m.OldSourceRef(ctx)
+	case agentdefinition.FieldRegistryXrn:
+		return m.OldRegistryXrn(ctx)
+	case agentdefinition.FieldDescription:
+		return m.OldDescription(ctx)
+	case agentdefinition.FieldModel:
+		return m.OldModel(ctx)
+	case agentdefinition.FieldIcon:
+		return m.OldIcon(ctx)
+	case agentdefinition.FieldRole:
+		return m.OldRole(ctx)
+	case agentdefinition.FieldTools:
+		return m.OldTools(ctx)
+	case agentdefinition.FieldAllowedTools:
+		return m.OldAllowedTools(ctx)
+	case agentdefinition.FieldSkills:
+		return m.OldSkills(ctx)
+	case agentdefinition.FieldDependencies:
+		return m.OldDependencies(ctx)
+	case agentdefinition.FieldRequires:
+		return m.OldRequires(ctx)
+	case agentdefinition.FieldSourcePath:
+		return m.OldSourcePath(ctx)
+	case agentdefinition.FieldContentHash:
+		return m.OldContentHash(ctx)
+	case agentdefinition.FieldFirstSeenAt:
+		return m.OldFirstSeenAt(ctx)
+	case agentdefinition.FieldLastSeenAt:
+		return m.OldLastSeenAt(ctx)
+	case agentdefinition.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case agentdefinition.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown AgentDefinition field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AgentDefinitionMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case agentdefinition.FieldRepoName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRepoName(v)
+		return nil
+	case agentdefinition.FieldNamespace:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNamespace(v)
+		return nil
+	case agentdefinition.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case agentdefinition.FieldQualifiedName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetQualifiedName(v)
+		return nil
+	case agentdefinition.FieldSourceRef:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSourceRef(v)
+		return nil
+	case agentdefinition.FieldRegistryXrn:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRegistryXrn(v)
+		return nil
+	case agentdefinition.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case agentdefinition.FieldModel:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetModel(v)
+		return nil
+	case agentdefinition.FieldIcon:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIcon(v)
+		return nil
+	case agentdefinition.FieldRole:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRole(v)
+		return nil
+	case agentdefinition.FieldTools:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTools(v)
+		return nil
+	case agentdefinition.FieldAllowedTools:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAllowedTools(v)
+		return nil
+	case agentdefinition.FieldSkills:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSkills(v)
+		return nil
+	case agentdefinition.FieldDependencies:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDependencies(v)
+		return nil
+	case agentdefinition.FieldRequires:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequires(v)
+		return nil
+	case agentdefinition.FieldSourcePath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSourcePath(v)
+		return nil
+	case agentdefinition.FieldContentHash:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContentHash(v)
+		return nil
+	case agentdefinition.FieldFirstSeenAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFirstSeenAt(v)
+		return nil
+	case agentdefinition.FieldLastSeenAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastSeenAt(v)
+		return nil
+	case agentdefinition.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case agentdefinition.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown AgentDefinition field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *AgentDefinitionMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *AgentDefinitionMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AgentDefinitionMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown AgentDefinition numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *AgentDefinitionMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(agentdefinition.FieldSourceRef) {
+		fields = append(fields, agentdefinition.FieldSourceRef)
+	}
+	if m.FieldCleared(agentdefinition.FieldRegistryXrn) {
+		fields = append(fields, agentdefinition.FieldRegistryXrn)
+	}
+	if m.FieldCleared(agentdefinition.FieldDescription) {
+		fields = append(fields, agentdefinition.FieldDescription)
+	}
+	if m.FieldCleared(agentdefinition.FieldModel) {
+		fields = append(fields, agentdefinition.FieldModel)
+	}
+	if m.FieldCleared(agentdefinition.FieldIcon) {
+		fields = append(fields, agentdefinition.FieldIcon)
+	}
+	if m.FieldCleared(agentdefinition.FieldRole) {
+		fields = append(fields, agentdefinition.FieldRole)
+	}
+	if m.FieldCleared(agentdefinition.FieldTools) {
+		fields = append(fields, agentdefinition.FieldTools)
+	}
+	if m.FieldCleared(agentdefinition.FieldAllowedTools) {
+		fields = append(fields, agentdefinition.FieldAllowedTools)
+	}
+	if m.FieldCleared(agentdefinition.FieldSkills) {
+		fields = append(fields, agentdefinition.FieldSkills)
+	}
+	if m.FieldCleared(agentdefinition.FieldDependencies) {
+		fields = append(fields, agentdefinition.FieldDependencies)
+	}
+	if m.FieldCleared(agentdefinition.FieldRequires) {
+		fields = append(fields, agentdefinition.FieldRequires)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *AgentDefinitionMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *AgentDefinitionMutation) ClearField(name string) error {
+	switch name {
+	case agentdefinition.FieldSourceRef:
+		m.ClearSourceRef()
+		return nil
+	case agentdefinition.FieldRegistryXrn:
+		m.ClearRegistryXrn()
+		return nil
+	case agentdefinition.FieldDescription:
+		m.ClearDescription()
+		return nil
+	case agentdefinition.FieldModel:
+		m.ClearModel()
+		return nil
+	case agentdefinition.FieldIcon:
+		m.ClearIcon()
+		return nil
+	case agentdefinition.FieldRole:
+		m.ClearRole()
+		return nil
+	case agentdefinition.FieldTools:
+		m.ClearTools()
+		return nil
+	case agentdefinition.FieldAllowedTools:
+		m.ClearAllowedTools()
+		return nil
+	case agentdefinition.FieldSkills:
+		m.ClearSkills()
+		return nil
+	case agentdefinition.FieldDependencies:
+		m.ClearDependencies()
+		return nil
+	case agentdefinition.FieldRequires:
+		m.ClearRequires()
+		return nil
+	}
+	return fmt.Errorf("unknown AgentDefinition nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *AgentDefinitionMutation) ResetField(name string) error {
+	switch name {
+	case agentdefinition.FieldRepoName:
+		m.ResetRepoName()
+		return nil
+	case agentdefinition.FieldNamespace:
+		m.ResetNamespace()
+		return nil
+	case agentdefinition.FieldName:
+		m.ResetName()
+		return nil
+	case agentdefinition.FieldQualifiedName:
+		m.ResetQualifiedName()
+		return nil
+	case agentdefinition.FieldSourceRef:
+		m.ResetSourceRef()
+		return nil
+	case agentdefinition.FieldRegistryXrn:
+		m.ResetRegistryXrn()
+		return nil
+	case agentdefinition.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case agentdefinition.FieldModel:
+		m.ResetModel()
+		return nil
+	case agentdefinition.FieldIcon:
+		m.ResetIcon()
+		return nil
+	case agentdefinition.FieldRole:
+		m.ResetRole()
+		return nil
+	case agentdefinition.FieldTools:
+		m.ResetTools()
+		return nil
+	case agentdefinition.FieldAllowedTools:
+		m.ResetAllowedTools()
+		return nil
+	case agentdefinition.FieldSkills:
+		m.ResetSkills()
+		return nil
+	case agentdefinition.FieldDependencies:
+		m.ResetDependencies()
+		return nil
+	case agentdefinition.FieldRequires:
+		m.ResetRequires()
+		return nil
+	case agentdefinition.FieldSourcePath:
+		m.ResetSourcePath()
+		return nil
+	case agentdefinition.FieldContentHash:
+		m.ResetContentHash()
+		return nil
+	case agentdefinition.FieldFirstSeenAt:
+		m.ResetFirstSeenAt()
+		return nil
+	case agentdefinition.FieldLastSeenAt:
+		m.ResetLastSeenAt()
+		return nil
+	case agentdefinition.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case agentdefinition.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown AgentDefinition field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *AgentDefinitionMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.teams != nil {
+		edges = append(edges, agentdefinition.EdgeTeams)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *AgentDefinitionMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case agentdefinition.EdgeTeams:
+		ids := make([]ent.Value, 0, len(m.teams))
+		for id := range m.teams {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *AgentDefinitionMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedteams != nil {
+		edges = append(edges, agentdefinition.EdgeTeams)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *AgentDefinitionMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case agentdefinition.EdgeTeams:
+		ids := make([]ent.Value, 0, len(m.removedteams))
+		for id := range m.removedteams {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *AgentDefinitionMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedteams {
+		edges = append(edges, agentdefinition.EdgeTeams)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *AgentDefinitionMutation) EdgeCleared(name string) bool {
+	switch name {
+	case agentdefinition.EdgeTeams:
+		return m.clearedteams
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *AgentDefinitionMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown AgentDefinition unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *AgentDefinitionMutation) ResetEdge(name string) error {
+	switch name {
+	case agentdefinition.EdgeTeams:
+		m.ResetTeams()
+		return nil
+	}
+	return fmt.Errorf("unknown AgentDefinition edge %s", name)
+}
+
+// TeamDefinitionMutation represents an operation that mutates the TeamDefinition nodes in the graph.
+type TeamDefinitionMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *uuid.UUID
+	repo_name         *string
+	name              *string
+	source_ref        *string
+	registry_xrn      *string
+	version           *string
+	description       *string
+	orchestrator      *string
+	agent_names       *[]string
+	appendagent_names []string
+	source_path       *string
+	content_hash      *string
+	first_seen_at     *time.Time
+	last_seen_at      *time.Time
+	created_at        *time.Time
+	updated_at        *time.Time
+	clearedFields     map[string]struct{}
+	agents            map[uuid.UUID]struct{}
+	removedagents     map[uuid.UUID]struct{}
+	clearedagents     bool
+	done              bool
+	oldValue          func(context.Context) (*TeamDefinition, error)
+	predicates        []predicate.TeamDefinition
+}
+
+var _ ent.Mutation = (*TeamDefinitionMutation)(nil)
+
+// teamdefinitionOption allows management of the mutation configuration using functional options.
+type teamdefinitionOption func(*TeamDefinitionMutation)
+
+// newTeamDefinitionMutation creates new mutation for the TeamDefinition entity.
+func newTeamDefinitionMutation(c config, op Op, opts ...teamdefinitionOption) *TeamDefinitionMutation {
+	m := &TeamDefinitionMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTeamDefinition,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTeamDefinitionID sets the ID field of the mutation.
+func withTeamDefinitionID(id uuid.UUID) teamdefinitionOption {
+	return func(m *TeamDefinitionMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *TeamDefinition
+		)
+		m.oldValue = func(ctx context.Context) (*TeamDefinition, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().TeamDefinition.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTeamDefinition sets the old TeamDefinition of the mutation.
+func withTeamDefinition(node *TeamDefinition) teamdefinitionOption {
+	return func(m *TeamDefinitionMutation) {
+		m.oldValue = func(context.Context) (*TeamDefinition, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TeamDefinitionMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TeamDefinitionMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of TeamDefinition entities.
+func (m *TeamDefinitionMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *TeamDefinitionMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *TeamDefinitionMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().TeamDefinition.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetRepoName sets the "repo_name" field.
+func (m *TeamDefinitionMutation) SetRepoName(s string) {
+	m.repo_name = &s
+}
+
+// RepoName returns the value of the "repo_name" field in the mutation.
+func (m *TeamDefinitionMutation) RepoName() (r string, exists bool) {
+	v := m.repo_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRepoName returns the old "repo_name" field's value of the TeamDefinition entity.
+// If the TeamDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamDefinitionMutation) OldRepoName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRepoName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRepoName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRepoName: %w", err)
+	}
+	return oldValue.RepoName, nil
+}
+
+// ResetRepoName resets all changes to the "repo_name" field.
+func (m *TeamDefinitionMutation) ResetRepoName() {
+	m.repo_name = nil
+}
+
+// SetName sets the "name" field.
+func (m *TeamDefinitionMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *TeamDefinitionMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the TeamDefinition entity.
+// If the TeamDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamDefinitionMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *TeamDefinitionMutation) ResetName() {
+	m.name = nil
+}
+
+// SetSourceRef sets the "source_ref" field.
+func (m *TeamDefinitionMutation) SetSourceRef(s string) {
+	m.source_ref = &s
+}
+
+// SourceRef returns the value of the "source_ref" field in the mutation.
+func (m *TeamDefinitionMutation) SourceRef() (r string, exists bool) {
+	v := m.source_ref
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSourceRef returns the old "source_ref" field's value of the TeamDefinition entity.
+// If the TeamDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamDefinitionMutation) OldSourceRef(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSourceRef is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSourceRef requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSourceRef: %w", err)
+	}
+	return oldValue.SourceRef, nil
+}
+
+// ClearSourceRef clears the value of the "source_ref" field.
+func (m *TeamDefinitionMutation) ClearSourceRef() {
+	m.source_ref = nil
+	m.clearedFields[teamdefinition.FieldSourceRef] = struct{}{}
+}
+
+// SourceRefCleared returns if the "source_ref" field was cleared in this mutation.
+func (m *TeamDefinitionMutation) SourceRefCleared() bool {
+	_, ok := m.clearedFields[teamdefinition.FieldSourceRef]
+	return ok
+}
+
+// ResetSourceRef resets all changes to the "source_ref" field.
+func (m *TeamDefinitionMutation) ResetSourceRef() {
+	m.source_ref = nil
+	delete(m.clearedFields, teamdefinition.FieldSourceRef)
+}
+
+// SetRegistryXrn sets the "registry_xrn" field.
+func (m *TeamDefinitionMutation) SetRegistryXrn(s string) {
+	m.registry_xrn = &s
+}
+
+// RegistryXrn returns the value of the "registry_xrn" field in the mutation.
+func (m *TeamDefinitionMutation) RegistryXrn() (r string, exists bool) {
+	v := m.registry_xrn
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRegistryXrn returns the old "registry_xrn" field's value of the TeamDefinition entity.
+// If the TeamDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamDefinitionMutation) OldRegistryXrn(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRegistryXrn is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRegistryXrn requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRegistryXrn: %w", err)
+	}
+	return oldValue.RegistryXrn, nil
+}
+
+// ClearRegistryXrn clears the value of the "registry_xrn" field.
+func (m *TeamDefinitionMutation) ClearRegistryXrn() {
+	m.registry_xrn = nil
+	m.clearedFields[teamdefinition.FieldRegistryXrn] = struct{}{}
+}
+
+// RegistryXrnCleared returns if the "registry_xrn" field was cleared in this mutation.
+func (m *TeamDefinitionMutation) RegistryXrnCleared() bool {
+	_, ok := m.clearedFields[teamdefinition.FieldRegistryXrn]
+	return ok
+}
+
+// ResetRegistryXrn resets all changes to the "registry_xrn" field.
+func (m *TeamDefinitionMutation) ResetRegistryXrn() {
+	m.registry_xrn = nil
+	delete(m.clearedFields, teamdefinition.FieldRegistryXrn)
+}
+
+// SetVersion sets the "version" field.
+func (m *TeamDefinitionMutation) SetVersion(s string) {
+	m.version = &s
+}
+
+// Version returns the value of the "version" field in the mutation.
+func (m *TeamDefinitionMutation) Version() (r string, exists bool) {
+	v := m.version
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVersion returns the old "version" field's value of the TeamDefinition entity.
+// If the TeamDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamDefinitionMutation) OldVersion(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVersion is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVersion requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVersion: %w", err)
+	}
+	return oldValue.Version, nil
+}
+
+// ClearVersion clears the value of the "version" field.
+func (m *TeamDefinitionMutation) ClearVersion() {
+	m.version = nil
+	m.clearedFields[teamdefinition.FieldVersion] = struct{}{}
+}
+
+// VersionCleared returns if the "version" field was cleared in this mutation.
+func (m *TeamDefinitionMutation) VersionCleared() bool {
+	_, ok := m.clearedFields[teamdefinition.FieldVersion]
+	return ok
+}
+
+// ResetVersion resets all changes to the "version" field.
+func (m *TeamDefinitionMutation) ResetVersion() {
+	m.version = nil
+	delete(m.clearedFields, teamdefinition.FieldVersion)
+}
+
+// SetDescription sets the "description" field.
+func (m *TeamDefinitionMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *TeamDefinitionMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the TeamDefinition entity.
+// If the TeamDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamDefinitionMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ClearDescription clears the value of the "description" field.
+func (m *TeamDefinitionMutation) ClearDescription() {
+	m.description = nil
+	m.clearedFields[teamdefinition.FieldDescription] = struct{}{}
+}
+
+// DescriptionCleared returns if the "description" field was cleared in this mutation.
+func (m *TeamDefinitionMutation) DescriptionCleared() bool {
+	_, ok := m.clearedFields[teamdefinition.FieldDescription]
+	return ok
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *TeamDefinitionMutation) ResetDescription() {
+	m.description = nil
+	delete(m.clearedFields, teamdefinition.FieldDescription)
+}
+
+// SetOrchestrator sets the "orchestrator" field.
+func (m *TeamDefinitionMutation) SetOrchestrator(s string) {
+	m.orchestrator = &s
+}
+
+// Orchestrator returns the value of the "orchestrator" field in the mutation.
+func (m *TeamDefinitionMutation) Orchestrator() (r string, exists bool) {
+	v := m.orchestrator
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOrchestrator returns the old "orchestrator" field's value of the TeamDefinition entity.
+// If the TeamDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamDefinitionMutation) OldOrchestrator(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOrchestrator is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOrchestrator requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOrchestrator: %w", err)
+	}
+	return oldValue.Orchestrator, nil
+}
+
+// ClearOrchestrator clears the value of the "orchestrator" field.
+func (m *TeamDefinitionMutation) ClearOrchestrator() {
+	m.orchestrator = nil
+	m.clearedFields[teamdefinition.FieldOrchestrator] = struct{}{}
+}
+
+// OrchestratorCleared returns if the "orchestrator" field was cleared in this mutation.
+func (m *TeamDefinitionMutation) OrchestratorCleared() bool {
+	_, ok := m.clearedFields[teamdefinition.FieldOrchestrator]
+	return ok
+}
+
+// ResetOrchestrator resets all changes to the "orchestrator" field.
+func (m *TeamDefinitionMutation) ResetOrchestrator() {
+	m.orchestrator = nil
+	delete(m.clearedFields, teamdefinition.FieldOrchestrator)
+}
+
+// SetAgentNames sets the "agent_names" field.
+func (m *TeamDefinitionMutation) SetAgentNames(s []string) {
+	m.agent_names = &s
+	m.appendagent_names = nil
+}
+
+// AgentNames returns the value of the "agent_names" field in the mutation.
+func (m *TeamDefinitionMutation) AgentNames() (r []string, exists bool) {
+	v := m.agent_names
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAgentNames returns the old "agent_names" field's value of the TeamDefinition entity.
+// If the TeamDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamDefinitionMutation) OldAgentNames(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAgentNames is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAgentNames requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAgentNames: %w", err)
+	}
+	return oldValue.AgentNames, nil
+}
+
+// AppendAgentNames adds s to the "agent_names" field.
+func (m *TeamDefinitionMutation) AppendAgentNames(s []string) {
+	m.appendagent_names = append(m.appendagent_names, s...)
+}
+
+// AppendedAgentNames returns the list of values that were appended to the "agent_names" field in this mutation.
+func (m *TeamDefinitionMutation) AppendedAgentNames() ([]string, bool) {
+	if len(m.appendagent_names) == 0 {
+		return nil, false
+	}
+	return m.appendagent_names, true
+}
+
+// ClearAgentNames clears the value of the "agent_names" field.
+func (m *TeamDefinitionMutation) ClearAgentNames() {
+	m.agent_names = nil
+	m.appendagent_names = nil
+	m.clearedFields[teamdefinition.FieldAgentNames] = struct{}{}
+}
+
+// AgentNamesCleared returns if the "agent_names" field was cleared in this mutation.
+func (m *TeamDefinitionMutation) AgentNamesCleared() bool {
+	_, ok := m.clearedFields[teamdefinition.FieldAgentNames]
+	return ok
+}
+
+// ResetAgentNames resets all changes to the "agent_names" field.
+func (m *TeamDefinitionMutation) ResetAgentNames() {
+	m.agent_names = nil
+	m.appendagent_names = nil
+	delete(m.clearedFields, teamdefinition.FieldAgentNames)
+}
+
+// SetSourcePath sets the "source_path" field.
+func (m *TeamDefinitionMutation) SetSourcePath(s string) {
+	m.source_path = &s
+}
+
+// SourcePath returns the value of the "source_path" field in the mutation.
+func (m *TeamDefinitionMutation) SourcePath() (r string, exists bool) {
+	v := m.source_path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSourcePath returns the old "source_path" field's value of the TeamDefinition entity.
+// If the TeamDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamDefinitionMutation) OldSourcePath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSourcePath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSourcePath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSourcePath: %w", err)
+	}
+	return oldValue.SourcePath, nil
+}
+
+// ResetSourcePath resets all changes to the "source_path" field.
+func (m *TeamDefinitionMutation) ResetSourcePath() {
+	m.source_path = nil
+}
+
+// SetContentHash sets the "content_hash" field.
+func (m *TeamDefinitionMutation) SetContentHash(s string) {
+	m.content_hash = &s
+}
+
+// ContentHash returns the value of the "content_hash" field in the mutation.
+func (m *TeamDefinitionMutation) ContentHash() (r string, exists bool) {
+	v := m.content_hash
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContentHash returns the old "content_hash" field's value of the TeamDefinition entity.
+// If the TeamDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamDefinitionMutation) OldContentHash(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContentHash is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContentHash requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContentHash: %w", err)
+	}
+	return oldValue.ContentHash, nil
+}
+
+// ResetContentHash resets all changes to the "content_hash" field.
+func (m *TeamDefinitionMutation) ResetContentHash() {
+	m.content_hash = nil
+}
+
+// SetFirstSeenAt sets the "first_seen_at" field.
+func (m *TeamDefinitionMutation) SetFirstSeenAt(t time.Time) {
+	m.first_seen_at = &t
+}
+
+// FirstSeenAt returns the value of the "first_seen_at" field in the mutation.
+func (m *TeamDefinitionMutation) FirstSeenAt() (r time.Time, exists bool) {
+	v := m.first_seen_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFirstSeenAt returns the old "first_seen_at" field's value of the TeamDefinition entity.
+// If the TeamDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamDefinitionMutation) OldFirstSeenAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFirstSeenAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFirstSeenAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFirstSeenAt: %w", err)
+	}
+	return oldValue.FirstSeenAt, nil
+}
+
+// ResetFirstSeenAt resets all changes to the "first_seen_at" field.
+func (m *TeamDefinitionMutation) ResetFirstSeenAt() {
+	m.first_seen_at = nil
+}
+
+// SetLastSeenAt sets the "last_seen_at" field.
+func (m *TeamDefinitionMutation) SetLastSeenAt(t time.Time) {
+	m.last_seen_at = &t
+}
+
+// LastSeenAt returns the value of the "last_seen_at" field in the mutation.
+func (m *TeamDefinitionMutation) LastSeenAt() (r time.Time, exists bool) {
+	v := m.last_seen_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastSeenAt returns the old "last_seen_at" field's value of the TeamDefinition entity.
+// If the TeamDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamDefinitionMutation) OldLastSeenAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastSeenAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastSeenAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastSeenAt: %w", err)
+	}
+	return oldValue.LastSeenAt, nil
+}
+
+// ResetLastSeenAt resets all changes to the "last_seen_at" field.
+func (m *TeamDefinitionMutation) ResetLastSeenAt() {
+	m.last_seen_at = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *TeamDefinitionMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *TeamDefinitionMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the TeamDefinition entity.
+// If the TeamDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamDefinitionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *TeamDefinitionMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *TeamDefinitionMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *TeamDefinitionMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the TeamDefinition entity.
+// If the TeamDefinition object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamDefinitionMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *TeamDefinitionMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// AddAgentIDs adds the "agents" edge to the AgentDefinition entity by ids.
+func (m *TeamDefinitionMutation) AddAgentIDs(ids ...uuid.UUID) {
+	if m.agents == nil {
+		m.agents = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.agents[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAgents clears the "agents" edge to the AgentDefinition entity.
+func (m *TeamDefinitionMutation) ClearAgents() {
+	m.clearedagents = true
+}
+
+// AgentsCleared reports if the "agents" edge to the AgentDefinition entity was cleared.
+func (m *TeamDefinitionMutation) AgentsCleared() bool {
+	return m.clearedagents
+}
+
+// RemoveAgentIDs removes the "agents" edge to the AgentDefinition entity by IDs.
+func (m *TeamDefinitionMutation) RemoveAgentIDs(ids ...uuid.UUID) {
+	if m.removedagents == nil {
+		m.removedagents = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.agents, ids[i])
+		m.removedagents[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAgents returns the removed IDs of the "agents" edge to the AgentDefinition entity.
+func (m *TeamDefinitionMutation) RemovedAgentsIDs() (ids []uuid.UUID) {
+	for id := range m.removedagents {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AgentsIDs returns the "agents" edge IDs in the mutation.
+func (m *TeamDefinitionMutation) AgentsIDs() (ids []uuid.UUID) {
+	for id := range m.agents {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAgents resets all changes to the "agents" edge.
+func (m *TeamDefinitionMutation) ResetAgents() {
+	m.agents = nil
+	m.clearedagents = false
+	m.removedagents = nil
+}
+
+// Where appends a list predicates to the TeamDefinitionMutation builder.
+func (m *TeamDefinitionMutation) Where(ps ...predicate.TeamDefinition) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the TeamDefinitionMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *TeamDefinitionMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.TeamDefinition, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *TeamDefinitionMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *TeamDefinitionMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (TeamDefinition).
+func (m *TeamDefinitionMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *TeamDefinitionMutation) Fields() []string {
+	fields := make([]string, 0, 14)
+	if m.repo_name != nil {
+		fields = append(fields, teamdefinition.FieldRepoName)
+	}
+	if m.name != nil {
+		fields = append(fields, teamdefinition.FieldName)
+	}
+	if m.source_ref != nil {
+		fields = append(fields, teamdefinition.FieldSourceRef)
+	}
+	if m.registry_xrn != nil {
+		fields = append(fields, teamdefinition.FieldRegistryXrn)
+	}
+	if m.version != nil {
+		fields = append(fields, teamdefinition.FieldVersion)
+	}
+	if m.description != nil {
+		fields = append(fields, teamdefinition.FieldDescription)
+	}
+	if m.orchestrator != nil {
+		fields = append(fields, teamdefinition.FieldOrchestrator)
+	}
+	if m.agent_names != nil {
+		fields = append(fields, teamdefinition.FieldAgentNames)
+	}
+	if m.source_path != nil {
+		fields = append(fields, teamdefinition.FieldSourcePath)
+	}
+	if m.content_hash != nil {
+		fields = append(fields, teamdefinition.FieldContentHash)
+	}
+	if m.first_seen_at != nil {
+		fields = append(fields, teamdefinition.FieldFirstSeenAt)
+	}
+	if m.last_seen_at != nil {
+		fields = append(fields, teamdefinition.FieldLastSeenAt)
+	}
+	if m.created_at != nil {
+		fields = append(fields, teamdefinition.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, teamdefinition.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *TeamDefinitionMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case teamdefinition.FieldRepoName:
+		return m.RepoName()
+	case teamdefinition.FieldName:
+		return m.Name()
+	case teamdefinition.FieldSourceRef:
+		return m.SourceRef()
+	case teamdefinition.FieldRegistryXrn:
+		return m.RegistryXrn()
+	case teamdefinition.FieldVersion:
+		return m.Version()
+	case teamdefinition.FieldDescription:
+		return m.Description()
+	case teamdefinition.FieldOrchestrator:
+		return m.Orchestrator()
+	case teamdefinition.FieldAgentNames:
+		return m.AgentNames()
+	case teamdefinition.FieldSourcePath:
+		return m.SourcePath()
+	case teamdefinition.FieldContentHash:
+		return m.ContentHash()
+	case teamdefinition.FieldFirstSeenAt:
+		return m.FirstSeenAt()
+	case teamdefinition.FieldLastSeenAt:
+		return m.LastSeenAt()
+	case teamdefinition.FieldCreatedAt:
+		return m.CreatedAt()
+	case teamdefinition.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *TeamDefinitionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case teamdefinition.FieldRepoName:
+		return m.OldRepoName(ctx)
+	case teamdefinition.FieldName:
+		return m.OldName(ctx)
+	case teamdefinition.FieldSourceRef:
+		return m.OldSourceRef(ctx)
+	case teamdefinition.FieldRegistryXrn:
+		return m.OldRegistryXrn(ctx)
+	case teamdefinition.FieldVersion:
+		return m.OldVersion(ctx)
+	case teamdefinition.FieldDescription:
+		return m.OldDescription(ctx)
+	case teamdefinition.FieldOrchestrator:
+		return m.OldOrchestrator(ctx)
+	case teamdefinition.FieldAgentNames:
+		return m.OldAgentNames(ctx)
+	case teamdefinition.FieldSourcePath:
+		return m.OldSourcePath(ctx)
+	case teamdefinition.FieldContentHash:
+		return m.OldContentHash(ctx)
+	case teamdefinition.FieldFirstSeenAt:
+		return m.OldFirstSeenAt(ctx)
+	case teamdefinition.FieldLastSeenAt:
+		return m.OldLastSeenAt(ctx)
+	case teamdefinition.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case teamdefinition.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown TeamDefinition field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TeamDefinitionMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case teamdefinition.FieldRepoName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRepoName(v)
+		return nil
+	case teamdefinition.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case teamdefinition.FieldSourceRef:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSourceRef(v)
+		return nil
+	case teamdefinition.FieldRegistryXrn:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRegistryXrn(v)
+		return nil
+	case teamdefinition.FieldVersion:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVersion(v)
+		return nil
+	case teamdefinition.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case teamdefinition.FieldOrchestrator:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOrchestrator(v)
+		return nil
+	case teamdefinition.FieldAgentNames:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAgentNames(v)
+		return nil
+	case teamdefinition.FieldSourcePath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSourcePath(v)
+		return nil
+	case teamdefinition.FieldContentHash:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContentHash(v)
+		return nil
+	case teamdefinition.FieldFirstSeenAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFirstSeenAt(v)
+		return nil
+	case teamdefinition.FieldLastSeenAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastSeenAt(v)
+		return nil
+	case teamdefinition.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case teamdefinition.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown TeamDefinition field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *TeamDefinitionMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *TeamDefinitionMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TeamDefinitionMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown TeamDefinition numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *TeamDefinitionMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(teamdefinition.FieldSourceRef) {
+		fields = append(fields, teamdefinition.FieldSourceRef)
+	}
+	if m.FieldCleared(teamdefinition.FieldRegistryXrn) {
+		fields = append(fields, teamdefinition.FieldRegistryXrn)
+	}
+	if m.FieldCleared(teamdefinition.FieldVersion) {
+		fields = append(fields, teamdefinition.FieldVersion)
+	}
+	if m.FieldCleared(teamdefinition.FieldDescription) {
+		fields = append(fields, teamdefinition.FieldDescription)
+	}
+	if m.FieldCleared(teamdefinition.FieldOrchestrator) {
+		fields = append(fields, teamdefinition.FieldOrchestrator)
+	}
+	if m.FieldCleared(teamdefinition.FieldAgentNames) {
+		fields = append(fields, teamdefinition.FieldAgentNames)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *TeamDefinitionMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TeamDefinitionMutation) ClearField(name string) error {
+	switch name {
+	case teamdefinition.FieldSourceRef:
+		m.ClearSourceRef()
+		return nil
+	case teamdefinition.FieldRegistryXrn:
+		m.ClearRegistryXrn()
+		return nil
+	case teamdefinition.FieldVersion:
+		m.ClearVersion()
+		return nil
+	case teamdefinition.FieldDescription:
+		m.ClearDescription()
+		return nil
+	case teamdefinition.FieldOrchestrator:
+		m.ClearOrchestrator()
+		return nil
+	case teamdefinition.FieldAgentNames:
+		m.ClearAgentNames()
+		return nil
+	}
+	return fmt.Errorf("unknown TeamDefinition nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *TeamDefinitionMutation) ResetField(name string) error {
+	switch name {
+	case teamdefinition.FieldRepoName:
+		m.ResetRepoName()
+		return nil
+	case teamdefinition.FieldName:
+		m.ResetName()
+		return nil
+	case teamdefinition.FieldSourceRef:
+		m.ResetSourceRef()
+		return nil
+	case teamdefinition.FieldRegistryXrn:
+		m.ResetRegistryXrn()
+		return nil
+	case teamdefinition.FieldVersion:
+		m.ResetVersion()
+		return nil
+	case teamdefinition.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case teamdefinition.FieldOrchestrator:
+		m.ResetOrchestrator()
+		return nil
+	case teamdefinition.FieldAgentNames:
+		m.ResetAgentNames()
+		return nil
+	case teamdefinition.FieldSourcePath:
+		m.ResetSourcePath()
+		return nil
+	case teamdefinition.FieldContentHash:
+		m.ResetContentHash()
+		return nil
+	case teamdefinition.FieldFirstSeenAt:
+		m.ResetFirstSeenAt()
+		return nil
+	case teamdefinition.FieldLastSeenAt:
+		m.ResetLastSeenAt()
+		return nil
+	case teamdefinition.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case teamdefinition.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown TeamDefinition field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *TeamDefinitionMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.agents != nil {
+		edges = append(edges, teamdefinition.EdgeAgents)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *TeamDefinitionMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case teamdefinition.EdgeAgents:
+		ids := make([]ent.Value, 0, len(m.agents))
+		for id := range m.agents {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *TeamDefinitionMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedagents != nil {
+		edges = append(edges, teamdefinition.EdgeAgents)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *TeamDefinitionMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case teamdefinition.EdgeAgents:
+		ids := make([]ent.Value, 0, len(m.removedagents))
+		for id := range m.removedagents {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *TeamDefinitionMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedagents {
+		edges = append(edges, teamdefinition.EdgeAgents)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *TeamDefinitionMutation) EdgeCleared(name string) bool {
+	switch name {
+	case teamdefinition.EdgeAgents:
+		return m.clearedagents
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *TeamDefinitionMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown TeamDefinition unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *TeamDefinitionMutation) ResetEdge(name string) error {
+	switch name {
+	case teamdefinition.EdgeAgents:
+		m.ResetAgents()
+		return nil
+	}
+	return fmt.Errorf("unknown TeamDefinition edge %s", name)
+}
 
 // ViewMutation represents an operation that mutates the View nodes in the graph.
 type ViewMutation struct {

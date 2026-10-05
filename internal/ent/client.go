@@ -9,12 +9,15 @@ import (
 	"log"
 	"reflect"
 
-	"github.com/plexusone/agentplexus/internal/ent/migrate"
 	"github.com/google/uuid"
+	"github.com/plexusone/agentplexus/internal/ent/migrate"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/plexusone/agentplexus/internal/ent/agentdefinition"
+	"github.com/plexusone/agentplexus/internal/ent/teamdefinition"
 	"github.com/plexusone/agentplexus/internal/ent/view"
 )
 
@@ -23,6 +26,10 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// AgentDefinition is the client for interacting with the AgentDefinition builders.
+	AgentDefinition *AgentDefinitionClient
+	// TeamDefinition is the client for interacting with the TeamDefinition builders.
+	TeamDefinition *TeamDefinitionClient
 	// View is the client for interacting with the View builders.
 	View *ViewClient
 }
@@ -36,6 +43,8 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.AgentDefinition = NewAgentDefinitionClient(c.config)
+	c.TeamDefinition = NewTeamDefinitionClient(c.config)
 	c.View = NewViewClient(c.config)
 }
 
@@ -127,9 +136,11 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		View:   NewViewClient(cfg),
+		ctx:             ctx,
+		config:          cfg,
+		AgentDefinition: NewAgentDefinitionClient(cfg),
+		TeamDefinition:  NewTeamDefinitionClient(cfg),
+		View:            NewViewClient(cfg),
 	}, nil
 }
 
@@ -147,16 +158,18 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		View:   NewViewClient(cfg),
+		ctx:             ctx,
+		config:          cfg,
+		AgentDefinition: NewAgentDefinitionClient(cfg),
+		TeamDefinition:  NewTeamDefinitionClient(cfg),
+		View:            NewViewClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		View.
+//		AgentDefinition.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -178,22 +191,328 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.AgentDefinition.Use(hooks...)
+	c.TeamDefinition.Use(hooks...)
 	c.View.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.AgentDefinition.Intercept(interceptors...)
+	c.TeamDefinition.Intercept(interceptors...)
 	c.View.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *AgentDefinitionMutation:
+		return c.AgentDefinition.mutate(ctx, m)
+	case *TeamDefinitionMutation:
+		return c.TeamDefinition.mutate(ctx, m)
 	case *ViewMutation:
 		return c.View.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// AgentDefinitionClient is a client for the AgentDefinition schema.
+type AgentDefinitionClient struct {
+	config
+}
+
+// NewAgentDefinitionClient returns a client for the AgentDefinition from the given config.
+func NewAgentDefinitionClient(c config) *AgentDefinitionClient {
+	return &AgentDefinitionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `agentdefinition.Hooks(f(g(h())))`.
+func (c *AgentDefinitionClient) Use(hooks ...Hook) {
+	c.hooks.AgentDefinition = append(c.hooks.AgentDefinition, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `agentdefinition.Intercept(f(g(h())))`.
+func (c *AgentDefinitionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AgentDefinition = append(c.inters.AgentDefinition, interceptors...)
+}
+
+// Create returns a builder for creating a AgentDefinition entity.
+func (c *AgentDefinitionClient) Create() *AgentDefinitionCreate {
+	mutation := newAgentDefinitionMutation(c.config, OpCreate)
+	return &AgentDefinitionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AgentDefinition entities.
+func (c *AgentDefinitionClient) CreateBulk(builders ...*AgentDefinitionCreate) *AgentDefinitionCreateBulk {
+	return &AgentDefinitionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AgentDefinitionClient) MapCreateBulk(slice any, setFunc func(*AgentDefinitionCreate, int)) *AgentDefinitionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AgentDefinitionCreateBulk{err: fmt.Errorf("calling to AgentDefinitionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AgentDefinitionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AgentDefinitionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AgentDefinition.
+func (c *AgentDefinitionClient) Update() *AgentDefinitionUpdate {
+	mutation := newAgentDefinitionMutation(c.config, OpUpdate)
+	return &AgentDefinitionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AgentDefinitionClient) UpdateOne(_m *AgentDefinition) *AgentDefinitionUpdateOne {
+	mutation := newAgentDefinitionMutation(c.config, OpUpdateOne, withAgentDefinition(_m))
+	return &AgentDefinitionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AgentDefinitionClient) UpdateOneID(id uuid.UUID) *AgentDefinitionUpdateOne {
+	mutation := newAgentDefinitionMutation(c.config, OpUpdateOne, withAgentDefinitionID(id))
+	return &AgentDefinitionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AgentDefinition.
+func (c *AgentDefinitionClient) Delete() *AgentDefinitionDelete {
+	mutation := newAgentDefinitionMutation(c.config, OpDelete)
+	return &AgentDefinitionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AgentDefinitionClient) DeleteOne(_m *AgentDefinition) *AgentDefinitionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AgentDefinitionClient) DeleteOneID(id uuid.UUID) *AgentDefinitionDeleteOne {
+	builder := c.Delete().Where(agentdefinition.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AgentDefinitionDeleteOne{builder}
+}
+
+// Query returns a query builder for AgentDefinition.
+func (c *AgentDefinitionClient) Query() *AgentDefinitionQuery {
+	return &AgentDefinitionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAgentDefinition},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AgentDefinition entity by its id.
+func (c *AgentDefinitionClient) Get(ctx context.Context, id uuid.UUID) (*AgentDefinition, error) {
+	return c.Query().Where(agentdefinition.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AgentDefinitionClient) GetX(ctx context.Context, id uuid.UUID) *AgentDefinition {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTeams queries the teams edge of a AgentDefinition.
+func (c *AgentDefinitionClient) QueryTeams(_m *AgentDefinition) *TeamDefinitionQuery {
+	query := (&TeamDefinitionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentdefinition.Table, agentdefinition.FieldID, id),
+			sqlgraph.To(teamdefinition.Table, teamdefinition.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, agentdefinition.TeamsTable, agentdefinition.TeamsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AgentDefinitionClient) Hooks() []Hook {
+	return c.hooks.AgentDefinition
+}
+
+// Interceptors returns the client interceptors.
+func (c *AgentDefinitionClient) Interceptors() []Interceptor {
+	return c.inters.AgentDefinition
+}
+
+func (c *AgentDefinitionClient) mutate(ctx context.Context, m *AgentDefinitionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AgentDefinitionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AgentDefinitionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AgentDefinitionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AgentDefinitionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AgentDefinition mutation op: %q", m.Op())
+	}
+}
+
+// TeamDefinitionClient is a client for the TeamDefinition schema.
+type TeamDefinitionClient struct {
+	config
+}
+
+// NewTeamDefinitionClient returns a client for the TeamDefinition from the given config.
+func NewTeamDefinitionClient(c config) *TeamDefinitionClient {
+	return &TeamDefinitionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `teamdefinition.Hooks(f(g(h())))`.
+func (c *TeamDefinitionClient) Use(hooks ...Hook) {
+	c.hooks.TeamDefinition = append(c.hooks.TeamDefinition, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `teamdefinition.Intercept(f(g(h())))`.
+func (c *TeamDefinitionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.TeamDefinition = append(c.inters.TeamDefinition, interceptors...)
+}
+
+// Create returns a builder for creating a TeamDefinition entity.
+func (c *TeamDefinitionClient) Create() *TeamDefinitionCreate {
+	mutation := newTeamDefinitionMutation(c.config, OpCreate)
+	return &TeamDefinitionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of TeamDefinition entities.
+func (c *TeamDefinitionClient) CreateBulk(builders ...*TeamDefinitionCreate) *TeamDefinitionCreateBulk {
+	return &TeamDefinitionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TeamDefinitionClient) MapCreateBulk(slice any, setFunc func(*TeamDefinitionCreate, int)) *TeamDefinitionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TeamDefinitionCreateBulk{err: fmt.Errorf("calling to TeamDefinitionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TeamDefinitionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TeamDefinitionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for TeamDefinition.
+func (c *TeamDefinitionClient) Update() *TeamDefinitionUpdate {
+	mutation := newTeamDefinitionMutation(c.config, OpUpdate)
+	return &TeamDefinitionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TeamDefinitionClient) UpdateOne(_m *TeamDefinition) *TeamDefinitionUpdateOne {
+	mutation := newTeamDefinitionMutation(c.config, OpUpdateOne, withTeamDefinition(_m))
+	return &TeamDefinitionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TeamDefinitionClient) UpdateOneID(id uuid.UUID) *TeamDefinitionUpdateOne {
+	mutation := newTeamDefinitionMutation(c.config, OpUpdateOne, withTeamDefinitionID(id))
+	return &TeamDefinitionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for TeamDefinition.
+func (c *TeamDefinitionClient) Delete() *TeamDefinitionDelete {
+	mutation := newTeamDefinitionMutation(c.config, OpDelete)
+	return &TeamDefinitionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TeamDefinitionClient) DeleteOne(_m *TeamDefinition) *TeamDefinitionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TeamDefinitionClient) DeleteOneID(id uuid.UUID) *TeamDefinitionDeleteOne {
+	builder := c.Delete().Where(teamdefinition.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TeamDefinitionDeleteOne{builder}
+}
+
+// Query returns a query builder for TeamDefinition.
+func (c *TeamDefinitionClient) Query() *TeamDefinitionQuery {
+	return &TeamDefinitionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTeamDefinition},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a TeamDefinition entity by its id.
+func (c *TeamDefinitionClient) Get(ctx context.Context, id uuid.UUID) (*TeamDefinition, error) {
+	return c.Query().Where(teamdefinition.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TeamDefinitionClient) GetX(ctx context.Context, id uuid.UUID) *TeamDefinition {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryAgents queries the agents edge of a TeamDefinition.
+func (c *TeamDefinitionClient) QueryAgents(_m *TeamDefinition) *AgentDefinitionQuery {
+	query := (&AgentDefinitionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(teamdefinition.Table, teamdefinition.FieldID, id),
+			sqlgraph.To(agentdefinition.Table, agentdefinition.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, teamdefinition.AgentsTable, teamdefinition.AgentsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *TeamDefinitionClient) Hooks() []Hook {
+	return c.hooks.TeamDefinition
+}
+
+// Interceptors returns the client interceptors.
+func (c *TeamDefinitionClient) Interceptors() []Interceptor {
+	return c.inters.TeamDefinition
+}
+
+func (c *TeamDefinitionClient) mutate(ctx context.Context, m *TeamDefinitionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TeamDefinitionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TeamDefinitionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TeamDefinitionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TeamDefinitionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown TeamDefinition mutation op: %q", m.Op())
 	}
 }
 
@@ -333,9 +652,9 @@ func (c *ViewClient) mutate(ctx context.Context, m *ViewMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		View []ent.Hook
+		AgentDefinition, TeamDefinition, View []ent.Hook
 	}
 	inters struct {
-		View []ent.Interceptor
+		AgentDefinition, TeamDefinition, View []ent.Interceptor
 	}
 )

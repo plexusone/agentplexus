@@ -10,9 +10,9 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 	"github.com/plexusone/agentplexus/internal/ent/schema"
 	"github.com/plexusone/agentplexus/internal/ent/view"
-	"github.com/google/uuid"
 )
 
 // View is the model entity for the View schema.

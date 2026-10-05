@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/plexusone/agentplexus/internal/registry"
 	"github.com/plexusone/agentplexus/internal/server"
 	"github.com/plexusone/agentplexus/internal/storage"
 )
@@ -56,6 +57,16 @@ func main() {
 	for _, d := range dirs {
 		fmt.Printf("  %s\n", d)
 	}
+
+	syncResult, err := registry.Sync(ctx, db, dirs)
+	if err != nil {
+		log.Fatalf("error syncing agent registry: %v", err)
+	}
+	fmt.Printf("registry sync: %s\n", syncResult)
+	for _, warning := range syncResult.Warnings {
+		fmt.Fprintf(os.Stderr, "registry warning: %s\n", warning)
+	}
+
 	fmt.Printf("listening on http://localhost:%d\n", port)
 
 	srv := server.New(dirs, port, db)

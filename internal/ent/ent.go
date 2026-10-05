@@ -12,6 +12,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/plexusone/agentplexus/internal/ent/agentdefinition"
+	"github.com/plexusone/agentplexus/internal/ent/teamdefinition"
 	"github.com/plexusone/agentplexus/internal/ent/view"
 )
 
@@ -73,7 +75,9 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			view.Table: view.ValidColumn,
+			agentdefinition.Table: agentdefinition.ValidColumn,
+			teamdefinition.Table:  teamdefinition.ValidColumn,
+			view.Table:            view.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)
