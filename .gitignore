@@ -10,3 +10,4 @@ data/
 *.so
 *.dylib
 .DS_Store
+IDEATION_CHAT*.md
